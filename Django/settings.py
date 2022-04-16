@@ -146,4 +146,8 @@ SIMPLEUI_HOME_QUICK = True      # 快速操作
 
 
 #用于收集静态文件
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_ROOT = '/Django/static'  #指定样式收集目录
+STATICFILES_DIRS = [  # 列表或者元组都行
+    os.path.join(BASE_DIR, 'static')
+]
