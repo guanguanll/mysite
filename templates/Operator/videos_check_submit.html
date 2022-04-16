@@ -1,0 +1,205 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>工程管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="{% static 'layuiadmin/layui/css/layui.css' %}">
+    <link rel="stylesheet" href="{% static 'layuiadmin/style/admin.css' %}">
+    <style type="text/css">
+        .layui-input{
+            width: 150px;
+            font-size:20px;
+            text-align: center;
+            display: inline;
+        }
+    </style>
+
+</head>
+<body layadmin-themealias="default">
+<div class="layui-fluid">
+    <fieldset class="layui-elem-field">
+        <legend>冲孔填报数据</legend><br>
+        <div style="text-align:center">
+            <table class="layui-table" >
+                <tbody>
+                <tr style="height:50px; background-color:#D9D9D9;">
+                    <td colspan="8" style="font-size: 25px">抽采钻孔时评验收监控记录</td>
+                </tr>
+                <tr>
+                    <td style="font-size:20px;" rowspan="3">地点</td>
+                    <td  rowspan="3" style="text-align: center;">
+                        <input class="layui-input" id="work_place">
+                    </td>
+
+                    <td style="font-size:20px;"  rowspan="3">孔号</td>
+                    <td  rowspan="3">
+                        <input class="layui-input" id="kong_num">
+                    </td>
+
+                    <td style="font-size:20px;" rowspan="3">钻孔定位</td>
+                    <td style="font-size:20px;" colspan="2">偏角</td>
+                    <td><input class="layui-input" id="pian_angle"></td>
+                </tr>
+                <tr>
+                    <td style="font-size:20px;" colspan="2">方向</td>
+                    <td><input class="layui-input" id="direction"></td>
+                </tr>
+                <tr>
+                    <td style="font-size:20px;" colspan="2">倾角</td>
+                    <td><input class="layui-input" id="qing_angle"></td>
+                </tr>
+                <tr>
+                    <td style="font-size:20px;" rowspan="3">开钻时间</td>
+                    <td rowspan="3">
+                        <input type="date" class="layui-input" id="drill_start_time">
+                    </td>
+                    <td style="font-size:20px;" rowspan="3">冲孔</td>
+                    <td style="font-size:20px;">开始时间</td>
+                    <td>
+                        <input type="date" class="layui-input" id="flush_start_time">
+                    </td>
+                    <td style="font-size:20px;" rowspan="3">退钻</td>
+                    <td style="font-size:20px;">开始时间</td>
+                    <td>
+                        <input type="date" class="layui-input" id="reback_start_time">
+                    </td>
+
+                </tr>
+                <tr>
+                    <td style="font-size:20px;">结束时间</td>
+                    <td>
+                        <input type="date" class="layui-input" id="flush_end_time">
+                    </td>
+                    <td style="font-size:20px;">结束时间</td>
+                    <td>
+                        <input type="date" class="layui-input" id="reback_end_time">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-size:20px;">煤量(长*宽*高)</td>
+                    <td>
+                        <input class="layui-input" id="mei_count">
+                    </td>
+                    <td style="font-size:20px;">钻孔深度</td>
+                    <td>
+                        <input class="layui-input" id="drill_length">
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:20px;" rowspan="4">封孔</td>
+                    <td style="font-size:20px;" >开始时间</td>
+                    <td>
+                        <input type="date" class="layui-input" id="feng_start_time">
+                    </td>
+                    <td style="font-size:20px;" rowspan="2">视频编号</td>
+                    <td  rowspan="2">
+                        <input class="layui-input" id="video_num">
+                    </td>
+                    <td style="font-size:20px;" rowspan="2" >异常情况处置</td>
+                    <td  rowspan="2" colspan="2">
+                        <input class="layui-input" id="error_msg">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-size:20px;" >结束时间</td>
+                    <td>
+                        <input type="date" class="layui-input" id="feng_end_time">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-size:20px;" >封孔长度</td>
+                    <td>
+                        <input class="layui-input" id="feng_kong_length">
+                    </td>
+                    <td style="font-size:20px;" >视频监控记录人</td>
+                    <td>
+                        <input class="layui-input" id="video_check_person">
+                    </td>
+                    <td style="font-size:20px;" >当天班次</td>
+                    <td colspan="2">
+                        <input class="layui-input" id="now_class">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-size:20px;" >筛管长度</td>
+                    <td>
+                        <input class="layui-input" id="screen_length">
+                    </td>
+                    <td style="font-size:20px;" >钻孔施工负责人</td>
+                    <td>
+                        <input class="layui-input" id="work_person">
+                    </td>
+                    <td style="font-size:20px;" >填报时间</td>
+                    <td colspan="2">
+                        <input type="date" lay-verify="date" class="layui-input" id="submit_time">
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+        <br><br>
+        <div style="text-align:center">
+            <button class="layui-btn layui-btn-radius" style="height:50px; width:100px; font-size:30px;" id="submit">提交</button>
+        </div>
+        <br><br><br><br>
+    </fieldset>
+
+</div>
+</body>
+</html>
+
+<script src="{% static 'js/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'layuiadmin/layui/layui.js' %}"></script>
+
+<script>
+    layui.use(['table', 'upload', 'layer', 'form'], function () {
+        var table = layui.table;
+        var layer = layui.layer;
+        var form = layui.form;
+        var $ = layui.$;
+
+        $(document).on('click', '#submit', function(){          //提交按钮的监听事件
+            var data = get_input_data();       //获取输入的所有数据
+            layer.msg(JSON.stringify(data));
+
+        });
+})
+</script>
+
+<script>
+    function get_input_data(){
+        var data_json = {
+            work_place: document.getElementById('work_place').value,     //施工地点
+            kong_num: document.getElementById('kong_num').value,         //孔号
+            pian_angle: document.getElementById('pian_angle').value,     //偏角
+            direction: document.getElementById('direction').value,       //方向
+            qing_jiao: document.getElementById('qing_angle').value,      //倾角
+            drill_start_time: document.getElementById('drill_start_time').value,        //开钻时间
+            flush_start_time: document.getElementById('flush_start_time').value,       //冲孔开始时间
+            reback_start_time: document.getElementById('reback_start_time').value,     //退钻开始时间
+            flush_end_time: document.getElementById('flush_end_time').value,           //冲孔结束时间
+            reback_end_time: document.getElementById('reback_end_time').value,         //退钻结束时间
+            mei_count: document.getElementById('mei_count').value,       //煤量
+            drill_length: document.getElementById('drill_length').value,    //钻孔深度
+            feng_start_time: document.getElementById('feng_start_time').value, //封孔开始时间
+            video_num: document.getElementById('video_num').value, //视屏编号
+            error_msg: document.getElementById('error_msg').value, //异常情况处置
+            feng_end_time: document.getElementById('feng_end_time').value, //封孔结束时间
+            feng_kong_length: document.getElementById('feng_kong_length').value, //封孔长度
+            video_check_person: document.getElementById('video_check_person').value, //视频监控记录人
+            now_class: document.getElementById('now_class').value,  //当天班次
+            screen_length: document.getElementById('screen_length').value, //筛管长度
+            work_person: document.getElementById('work_person').value,   //钻孔施工负责人
+            submit_time: document.getElementById('submit_time').value,    //填报时间
+        };
+        return data_json;
+    }
+</script>
+
