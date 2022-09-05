@@ -11,145 +11,239 @@
     <link rel="stylesheet" href="{% static 'layuiadmin/layui/css/layui.css' %}">
     <link rel="stylesheet" href="{% static 'layuiadmin/style/admin.css' %}">
     <style type="text/css">
-        .layui-input{
-            width: 150px;
-            font-size:20px;
-            text-align: center;
-            display: inline;
+        .layui-form-label {
+            width: 100px;
+        }
+
+        .layui-input-block {
+            margin-left: 130px;
         }
     </style>
 
 </head>
 <body layadmin-themealias="default">
 <div class="layui-fluid">
-    <fieldset class="layui-elem-field">
-        <legend>冲孔填报数据</legend><br>
-        <div style="text-align:center">
-            <table class="layui-table" >
-                <tbody>
-                <tr style="height:50px; background-color:#D9D9D9;">
-                    <td colspan="8" style="font-size: 25px">抽采钻孔时评验收监控记录</td>
-                </tr>
-                <tr>
-                    <td style="font-size:20px;" rowspan="3">地点</td>
-                    <td  rowspan="3" style="text-align: center;">
-                        <input class="layui-input" id="work_place">
-                    </td>
+    <div class="layui-card-body">
+        <blockquote class="layui-elem-quote">冲孔填报数据</blockquote>
+        <form class="layui-form" action="">
+            <div class="layui-inline">
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span style="color:red">*</span>工作面选择</label>
+                    <div class="layui-input-block">
+                        <select name="work_face" lay-verify=required" id="work_face"
+                                lay-filter="work_face">
+                            <option value=""></option>
+                            {% for item in work_face %}
+                                <option value="{{ item.0 }}">{{ item.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span style="color:red">*</span>巷道选择</label>
+                    <div class="layui-input-block">
+                        <select name="tunnel" id="tunnel" lay-verify="required" lay-filter="tunnel">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span style="color:red">*</span>排号选择</label>
+                    <div class="layui-input-block">
+                        <select name="row" lay-verify="required" id="row" lay-filter="row">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">孔号</label>
+                    <div class="layui-input-block">
+                        <div class="layui-inline">
+                            <select name="kong_num" lay-verify="required" id="kong_num" lay-filter="kong_num">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align:center">
+                <table class="layui-table">
+                    <tbody>
+                    <tr>
+                        <td rowspan="3">工作面</td>
+                        <td rowspan="3" style="text-align: center;">
+                            <input class="layui-input" id="tb_work_face">
+                        </td>
 
-                    <td style="font-size:20px;"  rowspan="3">孔号</td>
-                    <td  rowspan="3">
-                        <input class="layui-input" id="kong_num">
-                    </td>
+                        <td rowspan="3">孔号</td>
+                        <td rowspan="3">
+                            <input class="layui-input" id="tb_kong_num">
+                        </td>
 
-                    <td style="font-size:20px;" rowspan="3">钻孔定位</td>
-                    <td style="font-size:20px;" colspan="2">偏角</td>
-                    <td><input class="layui-input" id="pian_angle"></td>
-                </tr>
-                <tr>
-                    <td style="font-size:20px;" colspan="2">方向</td>
-                    <td><input class="layui-input" id="direction"></td>
-                </tr>
-                <tr>
-                    <td style="font-size:20px;" colspan="2">倾角</td>
-                    <td><input class="layui-input" id="qing_angle"></td>
-                </tr>
-                <tr>
-                    <td style="font-size:20px;" rowspan="3">开钻时间</td>
-                    <td rowspan="3">
-                        <input type="date" class="layui-input" id="drill_start_time">
-                    </td>
-                    <td style="font-size:20px;" rowspan="3">冲孔</td>
-                    <td style="font-size:20px;">开始时间</td>
-                    <td>
-                        <input type="date" class="layui-input" id="flush_start_time">
-                    </td>
-                    <td style="font-size:20px;" rowspan="3">退钻</td>
-                    <td style="font-size:20px;">开始时间</td>
-                    <td>
-                        <input type="date" class="layui-input" id="reback_start_time">
-                    </td>
+                        <td rowspan="3">钻孔定位</td>
+                        <td colspan="2">偏角</td>
+                        <div class="layui-form-item">
+                            <td><input class="layui-input" id="pian_angle" disabled></td>
+                        </div>
+                    </tr>
+                    <tr>
+                        <td colspan="2">开孔高度</td>
+                        <div class="layui-form-item">
+                            <td><input class="layui-input" id="direction" name = "direction" disabled></td>
+                        </div>
+                    </tr>
+                    <tr>
+                        <td colspan="2">倾角</td>
+                        <div class="layui-form-item">
+                            <td><input class="layui-input" id="qing_angle" name="qing_angle" disabled></td>
+                        </div>
+                    </tr>
+                    <tr>
+                        <td rowspan="3">开钻时间</td>
+                        <div class="layui-form-item">
+                            <td rowspan="3">
+                                <input type="date" class="layui-input" id="drill_start_time" name = "drill_start_time" lay-verify= "required">
+                            </td>
+                        </div>
+                        <td rowspan="3">冲孔</td>
+                        <td>开始时间</td>
 
-                </tr>
-                <tr>
-                    <td style="font-size:20px;">结束时间</td>
-                    <td>
-                        <input type="date" class="layui-input" id="flush_end_time">
-                    </td>
-                    <td style="font-size:20px;">结束时间</td>
-                    <td>
-                        <input type="date" class="layui-input" id="reback_end_time">
-                    </td>
-                </tr>
-                <tr>
-                    <td style="font-size:20px;">煤量(长*宽*高)</td>
-                    <td>
-                        <input class="layui-input" id="mei_count">
-                    </td>
-                    <td style="font-size:20px;">钻孔深度</td>
-                    <td>
-                        <input class="layui-input" id="drill_length">
-                    </td>
-                </tr>
+                        <div class="layui-form-item">
+                            <td>
+                                <input type="date" class="layui-input" id="flush_start_time" name = "flush_start_time" lay-verify= "required">
+                            </td>
+                        </div>
+                        <td rowspan="3">退钻</td>
+                        <td>开始时间</td>
+                        <div class="layui-form-item">
+                            <td>
+                                <input type="date" class="layui-input" id="reback_start_time" name = "reback_start_time" lay-verify= "required">
+                            </td>
+                        </div>
 
-                <tr>
-                    <td style="font-size:20px;" rowspan="4">封孔</td>
-                    <td style="font-size:20px;" >开始时间</td>
-                    <td>
-                        <input type="date" class="layui-input" id="feng_start_time">
-                    </td>
-                    <td style="font-size:20px;" rowspan="2">视频编号</td>
-                    <td  rowspan="2">
-                        <input class="layui-input" id="video_num">
-                    </td>
-                    <td style="font-size:20px;" rowspan="2" >异常情况处置</td>
-                    <td  rowspan="2" colspan="2">
-                        <input class="layui-input" id="error_msg">
-                    </td>
-                </tr>
-                <tr>
-                    <td style="font-size:20px;" >结束时间</td>
-                    <td>
-                        <input type="date" class="layui-input" id="feng_end_time">
-                    </td>
-                </tr>
-                <tr>
-                    <td style="font-size:20px;" >封孔长度</td>
-                    <td>
-                        <input class="layui-input" id="feng_kong_length">
-                    </td>
-                    <td style="font-size:20px;" >视频监控记录人</td>
-                    <td>
-                        <input class="layui-input" id="video_check_person">
-                    </td>
-                    <td style="font-size:20px;" >当天班次</td>
-                    <td colspan="2">
-                        <input class="layui-input" id="now_class">
-                    </td>
-                </tr>
-                <tr>
-                    <td style="font-size:20px;" >筛管长度</td>
-                    <td>
-                        <input class="layui-input" id="screen_length">
-                    </td>
-                    <td style="font-size:20px;" >钻孔施工负责人</td>
-                    <td>
-                        <input class="layui-input" id="work_person">
-                    </td>
-                    <td style="font-size:20px;" >填报时间</td>
-                    <td colspan="2">
-                        <input type="date" lay-verify="date" class="layui-input" id="submit_time">
-                    </td>
-                </tr>
+                    </tr>
+                    <tr>
+                        <td>结束时间</td>
+                        <div class="layui-form-item">
+                            <td>
+                                <input type="date" class="layui-input" id="flush_end_time" name = "flush_end_time" lay-verify= "required">
+                            </td>
+                        </div>
+                        <td>结束时间</td>
+                        <div class="layui-form-item">
+                            <td>
+                                <input type="date" class="layui-input" id="reback_end_time" name = "reback_end_time" lay-verify= "required">
+                            </td>
+                        </div>
+                    </tr>
+                    <tr>
+                        <td>煤量(长*宽*高)</td>
+                        <div class="layui-form-item">
+                            <td>
+                                <input class="layui-input" id="mei_count" name="mei_count" disabled>
+                            </td>
+                        </div>
+                        <td>钻孔深度</td>
+                        <div class="layui-form-item">
 
-                </tbody>
-            </table>
-        </div>
-        <br><br>
-        <div style="text-align:center">
-            <button class="layui-btn layui-btn-radius" style="height:50px; width:100px; font-size:30px;" id="submit">提交</button>
-        </div>
-        <br><br><br><br>
-    </fieldset>
+                            <td>
+                                <input class="layui-input" id="drill_length" name = "drill_length" disabled>
+                            </td>
+                        </div>
+                    </tr>
+
+                    <tr>
+                        <td rowspan="4">封孔</td>
+                        <td>开始时间</td>
+                        <div class="layui-form-item">
+                            <td>
+                                <input type="date" class="layui-input" id="feng_start_time" name = "feng_start_time" lay-verify= "required">
+                            </td>
+                        </div>
+                        <td rowspan="2">视频编号</td>
+                        <div class="layui-form-item">
+                            <td rowspan="2">
+                                <input class="layui-input" id="video_num" name = "video_num" disabled>
+                            </td>
+                        </div>
+                        <td rowspan="2">异常情况处置</td>
+                        <div class="layui-form-item">
+                            <td rowspan="2" colspan="2">
+                                <input class="layui-input" id="error_msg" disabled>
+                            </td>
+                        </div>
+                    </tr>
+                    <tr>
+                        <td>结束时间</td>
+                        <div class="layui-form-item">
+                            <td>
+                                <input type="date" class="layui-input" id="feng_end_time" lay-verify = "required">
+                            </td>
+                        </div>
+                    </tr>
+                    <tr>
+                        <td>封孔长度</td>
+                        <div class="layui-form-item">
+
+                            <td>
+                                <input class="layui-input" id="feng_kong_length" disabled>
+                            </td>
+                        </div>
+                        <td>视频监控记录人</td>
+                        <div class="layui-form-item">
+                            <td>
+                                <input class="layui-input" id="video_check_person" lay-verify = "required">
+                            </td>
+                        </div>
+                        <td>当天班次</td>
+                        <div class="layui-form-item">
+                            <td colspan="2">
+                                <input class="layui-input" id="now_class" lay-verify = "required">
+                            </td>
+                        </div>
+                    </tr>
+                    <tr>
+                        <td>筛管长度</td>
+                        <div class="layui-form-item">
+                            <td>
+                                <input class="layui-input" id="screen_length" disabled>
+                            </td>
+                        </div>
+                        <td>钻孔施工负责人</td>
+                        <div class="layui-form-item">
+                            <td>
+                                <input class="layui-input" id="work_person"disabled>
+                            </td>
+                        </div>
+                        <td>填报时间</td>
+                        <div class="layui-form-item">
+                            <td colspan="2">
+                                <input type="date" lay-verify="date" class="layui-input" id="submit_time" lay-verify = "required">
+                            </td>
+                        </div>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+            <br><br>
+            <div style="text-align:center">
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="submit" class="layui-btn" lay-submit="" lay-filter="demo1"
+                                style="float:right;margin-right:50%">提交
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
 
 </div>
 </body>
@@ -164,17 +258,140 @@
         var layer = layui.layer;
         var form = layui.form;
         var $ = layui.$;
-
-        $(document).on('click', '#submit', function(){          //提交按钮的监听事件
-            var data = get_input_data();       //获取输入的所有数据
-            layer.msg(JSON.stringify(data));
-
+        //工作面选择
+        form.on('select(work_face)', function (data) {
+            var work_face = $("#work_face").val();
+            console.log("选择工作面" + work_face);
+            $.post(
+                {% url 'getTunnelByWorkface' %},
+                {"work_face": work_face},
+                function (data) {
+                    //每次先清空下拉框
+                    $("#tunnel").empty();
+                    $("#row").empty();
+                    //先给一个空选项
+                    $("#tunnel").append($("<option />").text("").attr("value", ""));
+                    console.log("data is " + data.data, JSON.stringify(data.data));
+                    {#console.log(JSON.parse(data.data))#}
+                    tunnelObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
+                    console.log(tunnelObjs, 'tunnelObjs')
+                    tunnelObjs.map((item, index) => {
+                        id = item.pk;
+                        name = item.fields.tunnel_name;
+                        $("#tunnel").append($("<option />").text(name).attr("value", id)); //动态添加标签
+                        return item;
+                    });
+                    $("#tb_work_face").val(work_face)
+                    form.render();
+                })
         });
-})
+        //巷道选择
+        form.on('select(tunnel)', function (data) {
+            var tunnel = $("#tunnel").val();
+            console.log("选择巷道" + tunnel);
+            $.post(
+                {% url 'getRowByTunnel' %},
+                {"tunnel": tunnel},
+                function (data) {
+                    //每次先清空下拉框
+                    $("#row").empty();
+                    $("#row").append($("<option />").text("").attr("value", ""));
+                    console.log("data is " + data.data, JSON.stringify(data.data));
+                    {#console.log(JSON.parse(data.data))#}
+                    rowObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
+                    console.log(rowObjs, 'rowObjs')
+                    rowObjs.map((item, index) => {
+                        id = item.pk;
+                        name = item.fields.row_id;
+                        $("#row").append($("<option />").text(name).attr("value", id)); //动态添加标签
+                        return item;
+                    });
+                    form.render();
+                })
+        });
+        //排号选择
+        form.on('select(row)', function (data) {
+            var row = $("#row").val();
+            console.log("选择巷道" + tunnel);
+            $.post(
+                {% url 'getHoleFengData' %},
+                {"row": row},
+                function (data) {
+                    //每次先清空下拉框
+                    $("#kong_num").empty();
+                    $("#kong_num").append($("<option />").text("").attr("value", ""));
+                    console.log("data is " + data.data, JSON.stringify(data.data));
+                    kongObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
+                    console.log(kongObjs, 'kongObjs')
+                    kongObjs.map((item, index) => {
+                        h_c_number = item.fields.h_c_number;
+                        $("#kong_num").append($("<option />").text(h_c_number).attr("value", h_c_number)); //动态添加标签
+                        return item;
+                    });
+                    form.render();
+                })
+            $
+        });
+
+        //孔号选择后渲染界面
+        form.on('select(kong_num)', function (data) {
+            var rowId = $("#row").val();
+            var kong_num = $("#kong_num").val();
+            console.log("选择巷道" + tunnel);
+            $.post(
+                {% url 'getVidioCheckDataByHoleNum' %},
+                {
+                    "rowId": rowId,
+                    "kong_num": kong_num
+                },
+                function (data) {
+                    //每次先清空下拉框
+                    console.log(data)
+                    if (data != null) {
+                        $("#tb_kong_num").val(kong_num);
+                        $("#pian_angle").val(data.pian_angle);
+                        $("#direction").val(data.hole_height);
+                        $("#qing_angle").val(data.qing_angle);
+                        $("#drill_start_time").val(data.start_zuan_time);
+                        $("#flush_start_time").val(data.water_start_time);
+                        $("#reback_start_time").val(data.remove_drill_start);
+                        $("#flush_end_time").val(data.water_end_time);
+                        $("#reback_end_time").val(data.remove_drill_end);
+                        $("#mei_count").val(data.mei_count);
+                        $("#drill_length").val(data.drill_length);
+                        $("#feng_start_time").val(data.feng_start_time);
+                        $("#video_num").val(data.video_num);
+                        $("#error_msg").val(data.error_msg);
+                        $("#feng_end_time").val(data.feng_end_time);
+                        $("#feng_kong_length").val(data.feng_kong_len);
+                        $("#video_check_person").val(data.video_check_person);
+                        $("#now_class").val(data.now_class);
+                        $("#screen_length").val(data.shai_guan_len);
+                        $("#work_person").val(data.worker_name);
+                        $("#submit_time").val(data.submit_time);
+                    }
+                    form.render();
+                })
+        });
+        form.on('submit(demo1)', function (data) {
+            console.log(JSON.stringify(data.field));
+            $.post(
+                {% url 'videos_check_submit_process' %},
+                {"data": JSON.stringify(data.field)},
+                function (res) {
+                    if (res.code == 0) {      //提交成功
+                        layer.alert(res.msg, {icon: 1, skin: 'layer-ext-demo'})
+                    } else if (res.code == 1) { //提交失败
+                        layer.alert(res.msg, {icon: 2, skin: 'layer-ext-demo'});
+                    }
+                })
+            return false;
+        });
+    });
 </script>
 
 <script>
-    function get_input_data(){
+    function get_input_data() {
         var data_json = {
             work_place: document.getElementById('work_place').value,     //施工地点
             kong_num: document.getElementById('kong_num').value,         //孔号

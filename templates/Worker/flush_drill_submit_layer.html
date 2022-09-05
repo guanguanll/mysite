@@ -11,136 +11,281 @@
     <link rel="stylesheet" href="{% static 'layuiadmin/layui/css/layui.css' %}">
     <link rel="stylesheet" href="{% static 'layuiadmin/style/admin.css' %}">
 
-    <style type="text/css">
-        .layui-form-label {
-            width: 130px;
-        }
-        .layui-input {
-            width: 50%;
-        }
+    <style>.layui-table td {
+        position: relative;
+        min-height: 20px;
+        line-height: 20px;
+        font-size: 14px;
+        padding: 9px 9px;
+    }
+
+    .layui-input-inline {
+        display: inline-block;
+        vertical-align: middle;
+        width: 100%;
+        height: 100%;
+    }
+
+    .layui-input, .layui-textarea {
+        display: block;
+        width: 100%;
+        padding-left: 10px;
+        border: 0px;
+    }
+
+    .layui-input-block {
+        width: 100%;
+        min-height: 36px;
+        margin-left: 9px;
+        height: 100%;
+    }
+
+    .layui-form-label {
+        position: relative;
+        float: left;
+        display: block;
+        padding: 9px 9px;
+        width: 150px;
+        font-weight: 400;
+        line-height: 20px;
+        text-align: center;
+    }
+
+    .layui-table {
+        width: 100%;
+        margin: 10px 10px;
+        background-color: #fff;
+        color: #666;
+    }
     </style>
 </head>
 
 <body>
-    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px; text-align: center;">
-        <legend>冲孔填报数据</legend>
-    </fieldset>
-    <form class="layui-form" action="">
-        <div class="layui-form-item">
-            <div class="layui-inline">
-                <label class="layui-form-label">排号</label>
-                <div class="layui-input-inline">
-                    <input type="tel" name="pai_num" lay-verify="required" autocomplete="off" class="layui-input">
-                </div>
-            </div>
-            <div class="layui-inline">
-                <label class="layui-form-label">孔号</label>
-                <div class="layui-input-inline">
-                    <input type="text" name="kong_num" lay-verify="required" autocomplete="off" class="layui-input">
-                </div>
-            </div>
-        </div>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <blockquote class="layui-elem-quote">冲煤参数填报</blockquote>
+            <form class="layui-form" action="">
+                <table class="layui-table">
+                    <tr>
+                        <td>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">工作面</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="layui-input-block">
+                                <select name="work_face" lay-verify="required" id="work_face"
+                                        lay-filter="work_face">
+                                    <option value=""></option>
+                                    {% for item in work_face %}
+                                        <option value="{{ item.0 }}">{{ item.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">巷道选择</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="layui-input-block">
+                                <select name="tunnel" id="tunnel" lay-verify="required" lay-filter="tunnel">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">排号选择</label>
 
-        <div class="layui-form-item">
-            <div class="layui-inline">
-                <label class="layui-form-label">冲孔日期</label>
-                <div class="layui-input-inline">
-                    <input type="text" name="flush_date" lay-verify="required" id="date1" autocomplete="off"
-                        class="layui-input">
-                </div>
-            </div>
-            <div class="layui-inline">
-                <label class="layui-form-label">应冲煤量(m3)</label>
-                <div class="layui-input-inline">
-                    <input type="tel" name="actual_flush_mei" lay-verify="required" autocomplete="off"
-                        class="layui-input">
-                </div>
-            </div>
-        </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="layui-input-block">
+                                <select name="row" lay-verify="required" id="row" lay-filter="row">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">孔号</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="layui-input-block">
+                                <select name="kong_num" lay-verify="required" id="kong_num" lay-filter="kong_num">
+                                </select>
+                            </div>
+                            {#                            <div class="layui-input-inline">#}
+                            {#                                <input type="text" name="kong_num" id="kong_num" lay-verify="required"#}
+                            {#                                       autocomplete="off"#}
+                            {#                                       class="layui-input">#}
+                            {#                            </div>#}
+                        </td>
+                        <td>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">冲孔日期</label></div>
+                        </td>
+                        <td>
+                            <div class="layui-input-inline">
+                                <input type="text" name="flush_date" id="flush_date" lay-verify="required"
+                                       id="flush_date"
+                                       autocomplete="off"
+                                       class="layui-input" placeholder="yyyy-MM-dd HH:mm:ss">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">应冲煤量(m<sup>3</sup>)</label></div>
+                        </td>
+                        <td>
+                            <div class="layui-input-inline">
+                                <input type="text" name="actual_flush_mei" id="actual_flush_mei"
+                                       lay-verify="required|number"
+                                       autocomplete="off"
+                                       class="layui-input" placeholder="请输入应冲煤量">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">冲孔水压(MPa)</label></div>
+                        </td>
+                        <td>
+                            <div class="layui-input-inline">
+                                <input type="text" name="flush_water_pressure" id="flush_water_pressure"
+                                       lay-verify="required|number"
+                                       autocomplete="off"
+                                       class="layui-input" placeholder="请输入冲孔水压">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">孔径φ(mm)</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="layui-input-inline">
+                                <input type="text" name="kong_radius" id="kong_radius" lay-verify="required|number"
+                                       autocomplete="off"
+                                       class="layui-input" placeholder="请输入孔径">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">水力冲孔开始时间</label></div>
+                        </td>
+                        <td>
+                            <div class="layui-input-inline">
+                                <input type="text" name="flush_start_time" id="startDate"
+                                       lay-verify="required|startDate"
+                                       autocomplete="off"
+                                       class="layui-input" placeholder="yyyy-MM-dd HH:mm:ss">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">水力冲孔结束时间</label></div>
+                        </td>
+                        <td>
+                            <div class="layui-input-inline">
+                                <input type="text" name="flush_end_time" id="endDate" lay-verify="required|endDate"
+                                       autocomplete="off"
+                                       class="layui-input" placeholder="yyyy-MM-dd HH:mm:ss">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">当班冲孔煤量(m<sup>3</sup>)</label></div>
+                        </td>
+                        <td>
+                            <div class="layui-input-inline">
+                                <input type="text" name="flush_mei_count_lenth" id="flush_mei_count_lenth"
+                                       lay-verify="required|number" autocomplete="off"
+                                       class="layui-input" placeholder="请输入当班冲煤量的长">
+                                <input type="text" name="flush_mei_count_wide" id="flush_mei_count_wide"
+                                       lay-verify="required|number" autocomplete="off"
+                                       class="layui-input" placeholder="请输入当班冲煤量的宽">
+                                <input type="text" name="flush_mei_count_heigth" id="flush_mei_count_heigth"
+                                       lay-verify="required|number" autocomplete="off"
+                                       class="layui-input" placeholder="请输入当班冲煤量的高">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">自动计算冲煤体积</label></div>
+                        </td>
+                        <td>
+                            <div class="layui-input-inline">
+                                <input type="text" name="auto_caculate_mei" id="auto_caculate_mei"
+                                       lay-verify="required|number"
+                                       autocomplete="off"
+                                       class="layui-input" placeholder="系统计算">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="layui-form-item layui-form-text">
+                                <label class="layui-form-label">冲孔评价</label></div>
+                        </td>
+                        <td colspan="5">
+                            <div class="layui-input-block">
+                <textarea placeholder="系统生成" class="layui-textarea" id="assess_flush_kong" lay-verify="required"
+                          style="width:99%"
+                          name="assess_flush_kong" disabled></textarea>
+                                <button class="layui-btn" id="pingjia" type="button">点击生成评价</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">施工负责人</label></div>
+                        </td>
+                        <td>
+                            <div class="layui-input-inline">
+                                <input type="text" name="work_person" id="work_person" autocomplete="off"
+                                       lay-verify="required"
+                                       class="layui-input">
+                            </div>
+                        </td>
+                        <td colspan="2"></td>
+                        <td>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">验收负责人</label></div>
+                        </td>
+                        <td>
+                            <div class="layui-input-inline">
+                                <input type="text" name="check_person" id="check_person" autocomplete="off"
+                                       lay-verify="required"
+                                       class="layui-input">
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <br><br>
 
-        <div class="layui-form-item">
-            <div class="layui-inline">
-                <label class="layui-form-label">冲孔水压(MPa)</label>
-                <div class="layui-input-inline">
-                    <input type="tel" name="flush_water_pressure" lay-verify="required" autocomplete="off"
-                        class="layui-input">
+                <div class="layui-form-item" style="text-align: center;">
+                    <div class="layui-input-block">
+                        <button type="submit" class="layui-btn" lay-submit="" lay-filter="demo1">立即提交</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
                 </div>
-            </div>
-            <div class="layui-inline">
-                <label class="layui-form-label">孔径φ(mm)</label>
-                <div class="layui-input-inline">
-                    <input type="text" name="kong_radius" lay-verify="required" autocomplete="off" class="layui-input">
-                </div>
-            </div>
-        </div>
 
-        <div class="layui-form-item">
-            <div class="layui-inline">
-                <label class="layui-form-label">水力冲孔开始时间</label>
-                <div class="layui-input-inline">
-                    <input type="text" name="flush_start_time" id="date1" lay-verify="required" autocomplete="off"
-                        class="layui-input">
-                </div>
-            </div>
-            <div class="layui-inline">
-                <label class="layui-form-label">水力冲孔结束时间</label>
-                <div class="layui-input-inline">
-                    <input type="text" name="flush_end_time" id="date1" lay-verify="required" autocomplete="off"
-                        class="layui-input">
-                </div>
-            </div>
+            </form>
         </div>
-
-        <div class="layui-form-item">
-            <div class="layui-inline">
-                <label class="layui-form-label">当班冲孔煤量(m3)</label>
-                <div class="layui-input-inline">
-                    <input type="tel" name="flush_mei_count" lay-verify="required" autocomplete="off"
-                        class="layui-input">
-                </div>
-            </div>
-            <div class="layui-inline">
-                <label class="layui-form-label">自动计算冲煤体积</label>
-                <div class="layui-input-inline">
-                    <input type="text" name="auto_caculate_mei" lay-verify="required" autocomplete="off"
-                        class="layui-input">
-                </div>
-            </div>
-        </div>
-
-        <div class="layui-form-item layui-form-text">
-            <label class="layui-form-label">冲孔评价</label>
-            <div class="layui-input-block">
-                <textarea placeholder="请输入内容" class="layui-textarea" lay-verify="required" style="width:80%"
-                    name="assess_flush_kong"></textarea>
-            </div>
-        </div>
-
-        <div class="layui-form-item">
-            <div class="layui-inline">
-                <label class="layui-form-label">施工负责人</label>
-                <div class="layui-input-inline">
-                    <input type="tel" name="work_person" autocomplete="off" lay-verify="required" class="layui-input">
-                </div>
-            </div>
-            <div class="layui-inline">
-                <label class="layui-form-label">验收负责人</label>
-                <div class="layui-input-inline">
-                    <input type="text" name="check_person" autocomplete="off" lay-verify="required" class="layui-input">
-                </div>
-            </div>
-        </div>
-        <br><br>
-
-        <div class="layui-form-item" style="text-align: center;">
-            <div class="layui-input-block">
-                <button type="submit" class="layui-btn" lay-submit="" lay-filter="demo1">立即提交</button>
-                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
-            </div>
-        </div>
-
-    </form>
-    <!-- 你的 HTML 代码 -->
+    </div>
+</div>
+<!-- 你的 HTML 代码 -->
 </body>
 
 
@@ -150,26 +295,168 @@
 <script>
     layui.use(['form', 'layedit', 'laydate'], function () {
         var form = layui.form, layer = layui.layer, layedit = layui.layedit, laydate = layui.laydate;
-
         //日期
         laydate.render({
-            elem: '#date'
+            elem: '#flush_date',
+            type: 'datetime'
+
         });
         laydate.render({
-            elem: '#date1'
+            elem: '#startDate',
+            type: 'datetime'
+        });
+        laydate.render({
+            elem: '#endDate',
+            type: 'datetime'
+        });
+        //工作面选择
+        form.on('select(work_face)', function (data) {
+            var work_face = $("#work_face").val();
+            console.log("选择工作面" + work_face);
+            $.post(
+                {% url 'getTunnelByWorkface' %},
+                {"work_face": work_face},
+                function (data) {
+                    //每次先清空下拉框
+                    $("#tunnel").empty();
+                    $("#row").empty();
+                    //先给一个空选项
+                    $("#tunnel").append($("<option />").text("").attr("value", ""));
+                    console.log("data is " + data.data, JSON.stringify(data.data));
+                    {#console.log(JSON.parse(data.data))#}
+                    tunnelObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
+                    console.log(tunnelObjs, 'tunnelObjs')
+                    tunnelObjs.map((item, index) => {
+                        id = item.pk;
+                        name = item.fields.tunnel_name;
+                        $("#tunnel").append($("<option />").text(name).attr("value", id)); //动态添加标签
+                        return item;
+                    });
+                    form.render();
+                })
+        });
+
+        //巷道选择
+        form.on('select(tunnel)', function (data) {
+            var tunnel = $("#tunnel").val();
+            console.log("选择巷道" + tunnel);
+            $.post(
+                {% url 'getRowByTunnel' %},
+                {"tunnel": tunnel},
+                function (data) {
+                    //每次先清空下拉框
+                    $("#row").empty();
+                    $("#row").append($("<option />").text("").attr("value", ""));
+                    console.log("data is " + data.data, JSON.stringify(data.data));
+                    {#console.log(JSON.parse(data.data))#}
+                    rowObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
+                    console.log(rowObjs, 'rowObjs')
+                    rowObjs.map((item, index) => {
+                        id = item.pk;
+                        name = item.fields.row_id;
+                        $("#row").append($("<option />").text(name).attr("value", id)); //动态添加标签
+                        return item;
+                    });
+                    form.render();
+                })
+        });
+
+        //孔号选择
+        form.on('select(row)', function (data) {
+            var row = $("#row").val();
+            console.log("选择排" + row);
+            $.post(
+                {% url 'getFlushHoleByRow' %},
+                {"row": row},
+                function (data) {
+                    //每次先清空下拉框
+                    $("#kong_num").empty();
+                    $("#kong_num").append($("<option />").text("").attr("value", ""));
+                    console.log("data is " + data.data, JSON.stringify(data.data));
+                    console.log(JSON.parse(data.data))
+                    holeObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
+                    console.log(holeObjs, 'holeObjs')
+                    holeObjs.map((item, index) => {
+                        id = item.fields.h_c_number;
+                        name = item.fields.h_c_number;
+                        $("#kong_num").append($("<option />").text(name).attr("value", id)); //动态添加标签
+                        return item;
+                    });
+                    form.render();
+                })
+        });
+
+        //表单校验
+        form.verify({
+            number: function (value) {
+                const patt = /^[0-9]+(\.[0-9]{1,3})?$/g;
+                let isPass = patt.test(value);
+                console.log("isPass", isPass)
+                if (!isPass) {
+                    return '该项必须为数字且最多保留三位小数';
+                }
+            },
+            startDate: function (value) {
+                var endDate = $("#endDate").val();
+                if (value >= endDate) {
+                    return "水力冲孔开始时间应该小于水力冲孔结束时间";
+                }
+            },
+            endDate: function (value) {
+                var startDate = $("#startDate").val();
+                if (value <= startDate) {
+                    return "水力冲孔结束时间应该大于水力冲孔开始时间";
+                }
+            }
+        });
+        $("#auto_caculate_mei").on("click", function (data) {
+            var flush_mei_count_lenth = $("#flush_mei_count_lenth").val();
+            var flush_mei_count_wide = $("#flush_mei_count_wide").val();
+            var flush_mei_count_heigth = $("#flush_mei_count_heigth").val();
+            $("#auto_caculate_mei").val((flush_mei_count_lenth * flush_mei_count_wide * flush_mei_count_heigth).toFixed(2));
+        });
+        $('#pingjia').on("click", function (data) {
+            var actual_flush_mei = $("#actual_flush_mei").val();
+            var auto_caculate_mei = $("#auto_caculate_mei").val();
+            console.log(auto_caculate_mei);
+            console.log(actual_flush_mei);
+            console.log(actual_flush_mei - auto_caculate_mei);
+            if (!actual_flush_mei) {
+                layer.alert("请填写应冲煤量");
+            } else if (!auto_caculate_mei) {
+                layer.alert("请填写自动计算冲煤体积");
+            } else if (actual_flush_mei - auto_caculate_mei >= 0) {
+                layer.alert("注意：应冲煤量应小于自动计算冲煤体积, 建议继续冲煤");
+                $("#assess_flush_kong").val("不合格");
+            } else {
+                $("#assess_flush_kong").val("合格");
+
+            }
         });
 
         //监听提交
         form.on('submit(demo1)', function (data) {
             //layer.msg(JSON.stringify(data.field));
-            layer.open(
-                {
-                    content: '提交成功!',
-                    yes: function (index, layero) {
-                        layer.close(index); //如果设定了yes回调，需进行手工关闭
+            var datas = data.field;
+            layer.confirm('确定提交？', {
+                btn: ['确定', '取消'] //可以无限个按钮
+            }, function () {
+                //按钮【按钮一】的回调
+                $.post(
+                    {% url 'submitWashCoalConstruction' %},
+                    datas,
+                    function (res) {
+                        if (res.code == 1) {
+                            layer.msg(res.msg, {"icon": 2});
+                        } else {
+                            layer.msg(res.msg, {"icon": 1});
+                        }
                     }
-                }
-            );
+                )
+            }, function (index) {
+                //按钮【按钮二】的回调
+                layer.closeAll();
+            });
             return false;
         });
     });

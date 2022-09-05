@@ -2,24 +2,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>钻孔施工视频举牌监控数据</title>
-  <meta name="renderer" content="webkit">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <link rel="stylesheet" href="{% static 'layuiadmin/layui/css/layui.css' %}">
-  <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+    <meta charset="utf-8">
+    <title>钻孔施工视频举牌监控数据</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="{% static 'layuiadmin/layui/css/layui.css' %}">
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
 </head>
-    <!--<link rel="stylesheet" href="{% static 'layuiadmin/style/admin.css' %}">-->
-
+<!--<link rel="stylesheet" href="{% static 'layuiadmin/style/admin.css' %}">-->
+<style>
+    .layui-table-cell {
+        height: auto;
+        padding: 0 3px;
+        overflow: visible;
+        text-overflow: inherit;
+        white-space: normal;
+        word-break: break-all;
+    }
+</style>
 <body layadmin-themealias="default">
 <div class="layui-fluid">
-    <fieldset class="layui-elem-field">
-        <legend>申请信息中心</legend>
-        <div class="layui-field-box">
-            <table class="layui-table" id="project_list" lay-filter="test"></table>
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <blockquote class="layui-elem-quote">打孔申请</blockquote>
+
+            <div class="layui-field-box">
+                <table class="layui-table" id="project_list" lay-filter="test"></table>
+            </div>
         </div>
-    </fieldset>
+    </div>
 </div>
 </body>
 </html>
@@ -35,49 +47,51 @@
 
 <script>
     layui.use(['table', 'upload', 'layer'], function () {
-       var table = layui.table;
-       var layer = layui.layer;
-       var $ = layui.$;
+        var table = layui.table;
+        var layer = layui.layer;
+        var $ = layui.$;
 
-       table.render({
-           elem: "#project_list",
-           url: '{% url 'Mining:goto_approve_record_rendering' %}',
-           method: 'post',
-           height: 'full-200',
-           defaultToolbar: ['filter', 'exports', 'print'],
-           cols: [[
-               {field: 'id', width: '5%', title: 'ID', sort: true, align: 'center'},
-               {field: 'apply_id', width: '7%',title: '申请编号', sort: true, align: 'center'},
-               {field: 'apply_person', width: '7%',title: '申请人', sort: true, align: 'center'},
-               {field: 'pai_num', width: '5%',title: '排号', align: 'center'},
-               {field: 'kong_num', width: '5%',title: '孔号', align: 'center'},
-               {field: 'pian_angle', width: '5%',title: '偏角', align: 'center',},
-               {field: 'yang_angle', width: '5%',title: '仰角', align: 'center',},
-               {field: 'kong_length', width: '5%',title: '孔深', align: 'center',},
-               {field: 'yan_kong_length', width: '7%',title: '岩孔长度', align: 'center',},
-               {field: 'mei_duan_length', width: '7%',title: '煤段长度', align: 'center',},
-               {field: 'flush_mei_count',  width: '5%',title: '冲煤量', align: 'center',},
-               {field: 'apply_time', width: '7%',title: '申请时间', align: 'center',},
-               {field: 'apply_inform', width: '7%',title: '申请信息', align: 'center',},
-               {field: 'apply_status', width: '7%',title: '申请状态', align: 'center',},
-               {field: 'reback_msg', width: '7%',title: '反馈信息', align: 'center',},
-               {width: '10%', align: 'center', toolbar: '#barDemo', title:'操作'}
-           ]],
-           page:true,
-       });
+        table.render({
+            elem: "#project_list",
+            url: '{% url 'Mining:goto_approve_record_rendering' %}',
+            method: 'post',
+            height: 'full-200',
+            defaultToolbar: ['filter', 'exports', 'print'],
+            cols: [[
+                {field: 'id', width: '5%', title: 'ID', sort: true, align: 'center', hide: true},
+                {field: 'apply_person', width: '7%', title: '申请人', align: 'center'},
+                {field: 'pai_num', width: '5%', title: '排号', align: 'center'},
+                {field: 'kong_num', width: '5%', title: '孔号', align: 'center'},
+                {field: 'pian_angle', width: '5%', title: '偏角', align: 'center',},
+                {field: 'yang_angle', width: '5%', title: '仰角', align: 'center',},
+                {field: 'kong_length', width: '5%', title: '孔深', align: 'center',},
+                {field: 'yan_kong_length', width: '8%', title: '岩孔长度', align: 'center',},
+                {field: 'mei_duan_length', width: '8%', title: '煤段长度', align: 'center',},
+                {field: 'flush_mei_count', width: '6%', title: '冲煤量', align: 'center',},
+                {field: 'apply_time', width: '13%', title: '申请时间', sort: true, align: 'center',},
+                {field: 'apply_inform', width: '13%', title: '申请信息', align: 'center',},
+                {field: 'apply_status', title: '申请状态', align: 'center', hide: true},
+                {field: 'apply_status_desc', width: '7%', title: '申请状态', align: 'center',},
+                {field: 'reback_msg', width: '7%', title: '反馈信息', align: 'center', hide: true},
+                {width: '14%', align: 'center', toolbar: '#barDemo', title: '操作'}
+            ]],
+            page: true,
+        });
 
-       table.on('tool(test)', function(obj){
-           var data = obj.data;     //获取该行的数据
-           var layEvent = obj.event; //获得 lay-event 对应的值
-           if(layEvent == 'apply_pass'){
-                obj.update({apply_status: "审核通过"});
-            }else if(layEvent == 'apply_error'){
-                obj.update({apply_status: "审核不通过"});
-                layer.prompt({formType: 2,value: data.reback_msg}, function(value, index){
+        table.on('tool(test)', function (obj) {
+            var data = obj.data;     //获取该行的数据
+            var layEvent = obj.event; //获得 lay-event 对应的值
+            if (layEvent == 'apply_pass') {
+                obj.update({apply_status: "0"});
+                obj.update({apply_status_desc: "通过"});
+            } else if (layEvent == 'apply_error') {
+                obj.update({apply_status: "2"});
+                obj.update({apply_status_desc: "驳回"});
+                layer.prompt({formType: 2, value: data.reback_msg}, function (value, index) {
                     obj.update({reback_msg: value});
                     layer.close(index);
                 });
             }
-       });
+        });
     });
 </script>

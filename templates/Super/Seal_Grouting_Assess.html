@@ -1,0 +1,199 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>封孔注浆评价</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="{% static 'layuiadmin/layui/css/layui.css' %}">
+    <link rel="stylesheet" href="{% static 'layuiadmin/style/admin.css' %}">
+
+    <style type="text/css">
+        .layui-form-label {
+            width: 100px;
+        }
+
+        .layui-input-block {
+            margin-left: 130px;
+        }
+    </style>
+</head>
+
+<body layadmin-themealias="default">
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <fieldset class="layui-elem-field">
+                <blockquote class="layui-elem-quote">封孔注浆评价</blockquote>
+                <div class="layui-field-box">
+                    <form class="layui-form" action="">
+                        <div class="layui-inline">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label"><span style="color:red">*</span>工作面选择</label>
+                                <div class="layui-input-block">
+                                    <select name="work_face" lay-verify="required" id="work_face"
+                                            lay-filter="work_face">
+                                        <option value=""></option>
+                                        {% for item in work_face %}
+                                            <option value="{{ item.0 }}">{{ item.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label"><span style="color:red">*</span>巷道选择</label>
+                                <div class="layui-input-block">
+                                    <select name="tunnel" id="tunnel" lay-verify="required" lay-filter="tunnel">
+                                        <option value=""></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label"><span style="color:red">*</span>排号选择</label>
+                                <div class="layui-input-block">
+                                    <select name="row" lay-verify="required" id="row" lay-filter="row">
+                                        <option value=""></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="layui-field-box">
+                            <table id="demo" lay-filter="test" class="layui-table">
+                                <thead>
+                                <th colspan="7" style="align-content: center">
+                                    封孔注浆评价表
+                                </th>
+                                </thead>
+                                <tr>
+                                    <td>排号</td>
+                                    <td>孔号</td>
+                                    <td>煤段长度（m）</td>
+                                    <td>封孔长度（m）</td>
+                                    <td>注浆量（kg）</td>
+                                    <td>注浆压力</td>
+                                    <td>验收浓度</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>3</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>3</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>3</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="layui-form-item layui-form-text">
+                            <label class="layui-form-label">封孔注浆评价</label>
+                            <div class="layui-input-block">
+                                <label placeholder="请输入内容" class="layui-textarea">第32排钻孔当中，浓度验收不合格钻孔由1个，该孔浓度验收不合格主要原因是注浆压力不合格导致。
+                                    注浆封孔过程中，9#孔和10#孔注浆量不足（注浆量是否足量应当依据应当注浆量来评价，数据库中应添加一个应注浆量），需加强注浆管理。</label>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block" style="text-align: center">
+                                <button class="layui-btn" lay-submit lay-filter="download">下载</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script src="{% static 'js/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'layuiadmin/layui/layui.js' %}"></script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs layui-btn-radius" lay-event="detail">填报</a>
+</script>
+
+<script>
+    layui.use(['table', 'upload', 'layer', 'laydate'], function () {
+        var form = layui.form;
+        var layer = layui.layer;
+        var $ = layui.$;
+         //工作面选择
+        form.on('select(work_face)', function (data) {
+            var work_face = $("#work_face").val();
+            console.log("选择工作面" + work_face);
+            $.post(
+                {% url 'getTunnelByWorkface' %},
+                {"work_face": work_face},
+                function (data) {
+                    //每次先清空下拉框
+                    $("#tunnel").empty();
+                    $("#row").empty();
+                    //先给一个空选项
+                    $("#tunnel").append($("<option />").text("").attr("value", ""));
+                    console.log("data is " + data.data, JSON.stringify(data.data));
+                    {#console.log(JSON.parse(data.data))#}
+                    tunnelObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
+                    console.log(tunnelObjs, 'tunnelObjs')
+                    tunnelObjs.map((item, index) => {
+                        id = item.pk;
+                        name = item.fields.tunnel_name;
+                        $("#tunnel").append($("<option />").text(name).attr("value", id)); //动态添加标签
+                        return item;
+                    });
+                    form.render();
+                })
+        });
+
+        //巷道选择
+        form.on('select(tunnel)', function (data) {
+            var tunnel = $("#tunnel").val();
+            console.log("选择巷道" + tunnel);
+            $.post(
+                {% url 'getRowByTunnel' %},
+                {"tunnel": tunnel},
+                function (data) {
+                    //每次先清空下拉框
+                    $("#row").empty();
+                    $("#row").append($("<option />").text("").attr("value", ""));
+                    console.log("data is " + data.data, JSON.stringify(data.data));
+                    {#console.log(JSON.parse(data.data))#}
+                    rowObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
+                    console.log(rowObjs, 'rowObjs')
+                    rowObjs.map((item, index) => {
+                        id = item.pk;
+                        name = item.fields.row_id;
+                        $("#row").append($("<option />").text(name).attr("value", id)); //动态添加标签
+                        return item;
+                    });
+                    form.render();
+                })
+            $
+        });
+    });
+</script>

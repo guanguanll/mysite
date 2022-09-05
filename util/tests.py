@@ -1,10 +1,7 @@
 import re
 from django.forms.models import model_to_dict
-import os
 import pandas as pd
 import math
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Django.settings")
 import django
 from Mining.models import *
 django.setup()
@@ -28,13 +25,21 @@ def get_tunnel_datas(tunnel_name):  # 获取 tunnel数据
 def get_row_datas(tunnel_name, row_id):  # 通过排号和巷道号获取数据
     tunnel_Data = get_tunnel_datas(tunnel_name)
     tunnel_id = tunnel_Data['id']
-    Datas = Row.objects.filter(row_id=row_id, tunnel_id=tunnel_id).first()
+    Datas = Row.objects.filter(id=row_id, tunnel_id=tunnel_id).first()
     if Datas is not None:
         Data = model_to_dict(Datas)
     else:
         Data = {}
     return Data
 
+def get_row_data(tunnel_name, row_id):  # 通过排号和巷道号获取数据
+    tunnel_Data = get_tunnel_datas(tunnel_name)
+    tunnel_id = tunnel_Data['id']
+    Data = Row.objects.filter(id=row_id, tunnel_id=tunnel_id).first()
+    if Data is not None:
+        return Data
+    else:
+        return None
 
 def get_pai_jian_ju(tunnel_name):  # 通过排号获取排间距
     # row_id = request.Post.get('row_id')
@@ -122,9 +127,9 @@ def get_xie_ya():
 
 
 def get_hole_design_datas(tunnel_name, row_id, hole_number):  # 获取设计孔数据
-    row_data = get_row_datas(tunnel_name, row_id)
-    id = row_data['id']
-    Datas = Hole_Design.objects.filter(row_id=id, hole_number=hole_number).first()
+    row_data = get_row_data(tunnel_name, row_id)
+    id = row_data.id
+    Datas = Hole_Design.objects.filter(row_id =id, hole_number=hole_number).first()
     if Datas is not None:
         Data = model_to_dict(Datas)
     else:
@@ -313,15 +318,10 @@ def design_first_hole(tunnel_name, row_id, current_tunnel_depth):  # 设计首�
     design_elevation_angel = 90  # 首孔仰角
     deflection_angle = 0  # 设计偏角
     number = get_numbers(tunnel_first_hole_number)[1]
-    weather_empty = get_hole_design_datas(tunnel_name, row_id, number)
-    if bool(weather_empty) is not False:
-        print('存在此设计孔')
-        return  -1
-        #os._exit(0)
     zuobiao = matching_function(tunnel_name, row_id, number, row_x)
     if zuobiao is False:
         print('匹配错误！')
-        return -2
+        return 1
     rock_section = zuobiao[4]  # 设计岩段
     coal_section = zuobiao[5]  # 设计煤段
     see_ceil = coal_section + rock_section
@@ -331,7 +331,7 @@ def design_first_hole(tunnel_name, row_id, current_tunnel_depth):  # 设计首�
     mydata = data.values_list('chuan_ding_length', 'chong_mei_standard')
     chuan_ding_lengths = pd.DataFrame(list(mydata))
     chuan_ding_length = chuan_ding_lengths.iloc[0, 0]
-    Row.objects.filter(row_id=row_id).update(coal_seam_thickness=coal_seam_thickness)
+    #Row.objects.filter(row_id=row_id).update(coal_seam_thickness=coal_seam_thickness)
     hole_depth = see_ceil + float(chuan_ding_length)
     design_hole_height = tunnel_Data['hole_height']  # 设计孔高度
     single_row = 2
@@ -594,7 +594,7 @@ def design_odd_hole(tunnel_name, row_id, hole_number, pan_duan=False):  # 设计
                              deflection_angle=deflection_angle,
                              rock_section=rock_section, coal_section=coal_section, see_ceil=see_ceil,
                              hole_depth=hole_depth,
-                             row_id=id, design_elevation_angel=design_elevation_angel, single_row=single_row)
+                             row_id=id, design_elevation_angel=design_elevation_angel, single_row=single_row, isNext = "0")
     my_record2.save()
 
     weather_empty1 = get_hole_design_pou_mian_datas(tunnel_name, row_id, new_number)
@@ -864,41 +864,38 @@ def design_jun_pao(tunnel_name, row_id, hole_number):  # 竣工孔坐标
 
 
 def hole_design_estimate(tunnel_name, row_id, hole_number):  # 设计孔评价
-    row_Data = get_row_datas(tunnel_name, row_id)
-    row_x = row_Data['row_x']
-    row_y = row_Data['row_y']
-    data1 = get_xie_ya()  # 获取泄压范围
-    # 匹配泄压范围
-    x_1_xie = data1[data1.iloc[:, 0] < row_x].tail(1).iloc[0, 0]
-    x_2_xie = data1[data1.iloc[:, 0] > row_x].head(1).iloc[0, 0]
-    y_1_xie = data1[data1.iloc[:, 0] < row_x].tail(1).iloc[0, 1]
-    y_2_xie = data1[data1.iloc[:, 0] > row_x].head(1).iloc[0, 1]
-    y_xie = y_1_xie + (y_2_xie - y_1_xie) * (row_x - x_1_xie) / (x_2_xie - x_1_xie)
-    y_xie_cha = abs(y_xie - row_y)
-
+    row_Data = get_row_data(tunnel_name, row_id)
     you_kai = False  # 是否右侧创建孔
+    if row_Data:
+        row_x = row_Data.row_x
+        row_y = row_Data.row_y
+        data1 = get_xie_ya()  # 获取泄压范围
+        # 匹配泄压范围
+        x_1_xie = data1[data1.iloc[:, 0] < row_x].tail(1).iloc[0, 0]
+        x_2_xie = data1[data1.iloc[:, 0] > row_x].head(1).iloc[0, 0]
+        y_1_xie = data1[data1.iloc[:, 0] < row_x].tail(1).iloc[0, 1]
+        y_2_xie = data1[data1.iloc[:, 0] > row_x].head(1).iloc[0, 1]
+        y_xie = y_1_xie + (y_2_xie - y_1_xie) * (row_x - x_1_xie) / (x_2_xie - x_1_xie)
+        y_xie_cha = abs(y_xie - row_y)
+        hole_design_data = get_hole_design_datas(tunnel_name, row_id, hole_number)
+        design_elevation_angel = hole_design_data['design_elevation_angel']
+        hole_number_id = hole_design_data['id']
+        hole_design_pou_mian_data = get_hole_design_pou_mian_datas(tunnel_name, row_id, hole_number)
+        design_jian_mei_x = hole_design_pou_mian_data['design_jian_mei_x']
+        design_jian_ding_x = hole_design_pou_mian_data['design_jian_ding_x']
+        kai_kong_pou_x = hole_design_pou_mian_data['kai_kong_pou_x']
+        kong_sub_mei = abs(kai_kong_pou_x - design_jian_mei_x)  # 孔见煤
+        kong_sub_ding = abs(kai_kong_pou_x - design_jian_ding_x)  # 孔见顶
 
-    hole_design_data = get_hole_design_datas(tunnel_name, row_id, hole_number)
-    design_elevation_angel = hole_design_data['design_elevation_angel']
+        if kong_sub_mei >= y_xie_cha:
 
-    hole_number_id = hole_design_data['id']
-    hole_design_pou_mian_data = get_hole_design_pou_mian_datas(tunnel_name, row_id, hole_number)
-    design_jian_mei_x = hole_design_pou_mian_data['design_jian_mei_x']
-    design_jian_ding_x = hole_design_pou_mian_data['design_jian_ding_x']
-    kai_kong_pou_x = hole_design_pou_mian_data['kai_kong_pou_x']
-
-    kong_sub_mei = abs(kai_kong_pou_x - design_jian_mei_x)  # 孔见煤
-    kong_sub_ding = abs(kai_kong_pou_x - design_jian_ding_x)  # 孔见顶
-
-    if kong_sub_mei >= y_xie_cha:
-
-        my_record = Hole_Design.objects.filter(id=hole_number_id)
-        my_record.delete()
-        # 删除左侧孔向右侧设计!!!!!
-        you_kai = True
-    elif kong_sub_ding >= y_xie_cha:  # （设计 见顶-开孔）≥xie控制范围，修改设计孔孔深
-        equal_value = y_xie_cha / math.cos((design_elevation_angel) / 180 * math.pi)
-        Hole_Design.objects.filter(hole_number=hole_number, id=hole_number_id).update(see_ceil=equal_value,
+            my_record = Hole_Design.objects.filter(id=hole_number_id)
+            my_record.delete()
+            # 删除左侧孔向右侧设计!!!!!
+            you_kai = True
+        elif kong_sub_ding >= y_xie_cha:  # （设计 见顶-开孔）≥xie控制范围，修改设计孔孔深
+            equal_value = y_xie_cha / math.cos((design_elevation_angel) / 180 * math.pi)
+            Hole_Design.objects.filter(hole_number=hole_number, id=hole_number_id).update(see_ceil=equal_value,
                                                                                       hole_depth=equal_value)
     # 都不满足就不修改设计孔
     return you_kai
@@ -968,38 +965,20 @@ def ping_jia_shi_gong_kong(tunnel_name, row_id, hole_number):  # 评价施工孔
     y_shang = y_1_shang + (y_2_shang - y_1_shang) * (row_x - x_1_shang) / (x_2_shang - x_1_shang)
     y_shang_cha = abs(y_shang - row_y)
 
-    data3 = get_xie_ya()
-    x_1_xie = data3[data3.iloc[:, 0] < row_x].tail(1).iloc[0, 0]
-    x_2_xie = data3[data3.iloc[:, 0] > row_x].head(1).iloc[0, 0]
-    y_1_xie = data3[data3.iloc[:, 0] < row_x].tail(1).iloc[0, 1]
-    y_2_xie = data3[data3.iloc[:, 0] > row_x].head(1).iloc[0, 1]
-    y_xie = y_1_xie + (y_2_xie - y_1_xie) * (row_x - x_1_xie) / (x_2_xie - x_1_xie)
-    y_xie_cha = abs(y_xie - row_y)
-
     left_number = None
     right_number = tunnel_first_hole_number
 
     number = get_numbers(hole_number)[1]  # 获取当前孔号
     if number <= first_number:  # 孔号小于首孔号
-        if coal_sub_kai_x >= y_shang_cha and ceil_sub_kai_x >= y_xie_cha:  # 向右侧创建
+        if coal_sub_kai_x >= y_shang_cha:  # 向右侧创建(合格，合理)  # 向右侧创建
             if number % 2 == 0:
                 right_number = design_even_hole(tunnel_name, row_id, first_number, pan_duan=True)
                 left_number = hole_number
             else:
                 right_number = design_odd_hole(tunnel_name, row_id, first_number, pan_duan=True)
                 left_number = hole_number
-            return right_number
-            ping_jia_design = hole_design_estimate(tunnel_name, row_id, right_number)  # 设计孔评价
-            if ping_jia_design == True:  # 首次向右侧创建失败    you_kai = True
-                left_number = hole_number
-                right_number = tunnel_first_hole_number
         else:  # 继续左侧创建
             left_number = design_odd_hole(tunnel_name, row_id, hole_number)
-            ping_jia_design = hole_design_estimate(tunnel_name, row_id, left_number)  # 设计孔评价
-            if ping_jia_design == True:  # 是否创建失败
-                left_number = hole_number
-                right_number = first_number
-                print("此时需要向右侧创建孔")
     else:  # 孔号大于首孔号
         # 找出最左侧孔号
         my_record = Hole_Construction.objects.filter(row_id=id).values_list('h_c_number')
@@ -1099,8 +1078,8 @@ def design_repair_hole(tunnel_name, row_id, hole_number):  # 设计补孔 hole_n
     tunnel_Data = get_tunnel_datas(tunnel_name)
     design_data = get_hole_design_datas(tunnel_name, row_id, hole_number)
     hole_design_pou_mian_data = get_hole_design_pou_mian_datas(tunnel_name, row_id, hole_number)
-    row_data = get_row_datas(tunnel_name, row_id)
-    id = row_data['id']
+    row_data = get_row_data(tunnel_name, row_id)
+    id = row_data.id
     arch_radius = tunnel_Data['arch_radius']
     chuan_ding_length = 0.5
     hole_height = tunnel_Data['hole_height']
@@ -1210,13 +1189,13 @@ def design_repair_hole(tunnel_name, row_id, hole_number):  # 设计补孔 hole_n
         coal_section = design_data['coal_section'] * math.cos(math.radians(design_data['design_elevation_angel'])) / \
                        math.cos(math.radians(number_hole_construction_Data['r_elevation_angle']))
         hole_depth = see_ceil + 1
-
         my_record3 = Hole_Design(hole_number=new_number, design_hole_height=design_hole_height,
                                  deflection_angle=deflection_angle,
                                  rock_section=rock_section, coal_section=coal_section, see_ceil=see_ceil,
                                  hole_depth=hole_depth,
                                  row_id=id, design_elevation_angel=design_elevation_angel, single_row=single_row)
         my_record3.save()
+
 
     weather_empty1 = get_hole_design_pou_mian_datas(tunnel_name, row_id, new_number)
     # 判断设计孔剖面信息是否为空，为空结束
@@ -1256,7 +1235,22 @@ def design_repair_hole(tunnel_name, row_id, hole_number):  # 设计补孔 hole_n
     my_record4.save()
     return new_number
 
-
+def get_mine_datas(mine_name):
+    Datas = Mine.objects.filter(mine_name=mine_name).first()
+    if Datas is not None:
+        Data = model_to_dict(Datas)
+    else:
+        Data = {}
+    return Data
+def get_work_datas(mine_name):
+    mine_data = get_mine_datas(mine_name)
+    mine_id = mine_data['id']
+    Datas = Work_face.objects.filter(mine_id=mine_id).first()
+    if Datas is not None:
+        Data = model_to_dict(Datas)
+    else:
+        Data = {}
+    return
 # print(design_even_hole('16071工作面上部底板巷', 15, 2))
 # print(design_jun_pao('16071工作面上部底板巷', 15, 2))
 # print(ping_jia_shi_gong_kong('16071工作面上部底板巷', 15, 2))
@@ -1278,12 +1272,489 @@ def design_repair_hole(tunnel_name, row_id, hole_number):  # 设计补孔 hole_n
 # print("debug inform:", new_number)
 
 
-hole_data = Hole_Design.objects.all()
+# hole_data = Hole_Design.objects.all()
+#
+# hole_list = []
+#
+# for item in hole_data:
+#     hole_list.append(model_to_dict(item))
+#
+# for item in range(len(hole_list)):
+#     print(hole_list[item]["hole_number"])
 
-hole_list = []
 
-for item in hole_data:
-    hole_list.append(model_to_dict(item))
+# Insert_pao_graph1('16071工作面中部底板巷', 15, 11)
+from pyautocad import *
+import random
+from sklearn import linear_model
+import numpy as np
 
-for item in range(len(hole_list)):
-    print(hole_list[item]["hole_number"])
+model = linear_model.LinearRegression()
+
+# acad = Autocad(create_if_not_exists=True)
+
+# clr = acad.Application.GetInterfaceObject("AutoCAD.AcCmcolor.23")
+
+
+def set_color(color):
+    if color == '白':
+        r = 255
+        g = 255
+        b = 255
+    elif color == '黑':
+        r = 0
+        g = 0
+        b = 0
+    elif color == '红':
+        r = 255
+        g = 0
+        b = 0
+    elif color == '黄':
+        r = 255
+        g = 255
+        b = 0
+    elif color == '蓝':
+        r = 0
+        g = 0
+        b = 255
+    elif color == '绿':
+        r = 0
+        g = 255
+        b = 0
+    elif color == '灰':
+        r = 192
+        g = 192
+        b = 192
+    return clr.setRGB(r, g, b)
+
+
+def sui_ji(point):
+    polygon = random.choice(['三角形', '正方形', '五边形'])
+    pnts = []
+    if polygon == '三角形':
+        pnts = [point + APoint(0, 1), point + APoint(-1, -1), point + APoint(1, -1)]
+    elif polygon == '正方形':
+        pnts = [point + APoint(-1, 1), point + APoint(-1, -1), point + APoint(1, -1), point + APoint(1, 1)]
+    elif polygon == '五边形':
+        pnts = [point + APoint(-0.5, 1), point + APoint(-1, 0), point + APoint(-0.5, -1), point + APoint(0.5, -1),
+                point + APoint(1, 0), point + APoint(0.5, 1)]
+    pnts = [j for i in pnts for j in i]
+    pnts = aDouble(pnts)
+    pline = acad.model.AddPolyLine(pnts)
+    pline.Closed = True
+
+
+def get_regression(X, Y):
+    x = np.array(X).reshape(-1, 1)
+    y = np.array(Y).reshape(-1, 1)
+    if not x and not y:
+        print('列表为空！')
+        return 0, 0, 0
+    else:
+        hui_gui = linear_model.LinearRegression()
+        hui_gui.fit(x, y)
+        hui_gui_pred = hui_gui.predict(x)
+        xie_lv = hui_gui.coef_
+        jie_ju = hui_gui.intercept_
+        return hui_gui_pred, xie_lv, jie_ju
+
+
+def draw_picture(tunnel_name, row_id):  # 预测顶板线
+    row_data = get_row_datas(tunnel_name, row_id)
+    id = row_data['id']
+    Datas = jun_pao_cad.objects.filter(jun_pao_row_id=id)
+    cunchu = pd.DataFrame()
+    for i in range(len(Datas)):
+        Data = model_to_dict(Datas[i])
+        if Data['jun_pao_see_ceil_cad_x'] or Data['jun_pao_see_ceil_cad_y'] is not None:
+            cunchu = cunchu.append(Data, ignore_index=True)
+
+    for i in range(len(cunchu)):
+        cunchu['jun_pao_hole_num'].loc[i] = int((cunchu['jun_pao_hole_num'].loc[i]))
+    cunchu = cunchu.sort_values('jun_pao_hole_num', ascending=True)
+    hanshu = get_regression(cunchu['jun_pao_see_ceil_cad_x'], cunchu['jun_pao_see_ceil_cad_y'])
+    y_pred = hanshu[0]
+    color = input("请输入颜色：")
+    set_color(color)
+    p1 = APoint(cunchu['jun_pao_see_ceil_cad_x'].loc[0], y_pred[0])
+    p2 = APoint(cunchu['jun_pao_see_ceil_cad_x'].loc[len(cunchu) - 1], y_pred[-1])
+    line = acad.model.AddLine(p1, p2)
+    line.TrueColor = clr
+    line.LineWeight = 20
+    # xian = APoint(cunchu['jun_pao_see_ceil_x'].loc[2], y_pred[2])
+    # if hanshu[2]< 0:
+    #     textString = "y = {}x{}".format(float(hanshu[1]), float(hanshu[2]))
+    # else:
+    #     textString = "y = {}x+{}".format(float(hanshu[1]), float(hanshu[2]))
+    # textObj = acad.model.AddText(textString, xian, 1.25)
+    # textObj.Alignment = 2
+    # textObj.TrueColor = clr
+    acad.ActiveDocument.preferences.LineweightDisplay = 1
+    acad.ActiveDocument.Application.ZoomAll()
+    acad.ActiveDocument.Application.Update()
+
+
+# def draw_picture(tunnel_name, row_id):  # 预测顶板线
+#     row_data = get_row_datas(tunnel_name, row_id)
+#     id = row_data['id']
+#     Datas = jun_pao.objects.filter(jun_pao_row_id=id)
+#     cunchu = pd.DataFrame()
+#     for i in range(len(Datas)):
+#         Data = model_to_dict(Datas[i])
+#         if Data['jun_pao_see_ceil_x'] or Data['jun_pao_see_ceil_y'] is not None:
+#             cunchu = cunchu.append(Data, ignore_index=True)
+#
+#     for i in range(len(cunchu)):
+#         cunchu['jun_pao_hole_num'].loc[i] = int((cunchu['jun_pao_hole_num'].loc[i]))
+#     cunchu = cunchu.sort_values('jun_pao_hole_num', ascending=True)
+#     hanshu = get_regression(cunchu['jun_pao_see_ceil_x'], cunchu['jun_pao_see_ceil_y'])
+#     y_pred = hanshu[0]
+#     color = input("请输入颜色：")
+#     set_color(color)
+#     p1 = APoint(cunchu['jun_pao_see_ceil_x'].loc[0], y_pred[0])
+#     p2 = APoint(cunchu['jun_pao_see_ceil_x'].loc[len(cunchu)-1], y_pred[-1])
+#     line = acad.model.AddLine(p1, p2)
+#     line.TrueColor = clr
+#     line.LineWeight = 20
+#     AngleVertex = APoint(cunchu['jun_pao_see_ceil_x'].loc[0], y_pred[0])
+#     FirstEndPoint = APoint(cunchu['jun_pao_see_ceil_x'].loc[2], y_pred[0])
+#     SecondEndPoint = APoint(cunchu['jun_pao_see_ceil_x'].loc[2], y_pred[2])
+#     TextPoint = APoint(cunchu['jun_pao_see_ceil_x'].loc[3], y_pred[3])
+#     dimAngObj = acad.model.AddDimAngular(AngleVertex, FirstEndPoint, SecondEndPoint, TextPoint)
+#     dimAngObj.TrueColor = clr
+#
+#     # xian = APoint(cunchu['jun_pao_see_ceil_x'].loc[2], y_pred[2])
+#     # if hanshu[2]< 0:
+#     #     textString = "y = {}x{}".format(float(hanshu[1]), float(hanshu[2]))
+#     # else:
+#     #     textString = "y = {}x+{}".format(float(hanshu[1]), float(hanshu[2]))
+#     # textObj = acad.model.AddText(textString, xian, 1.25)
+#     # textObj.Alignment = 2
+#     # textObj.TrueColor = clr
+#     acad.ActiveDocument.preferences.LineweightDisplay = 1
+#     acad.ActiveDocument.Application.ZoomAll()
+#     acad.ActiveDocument.Application.Update()
+
+
+def draw_picture1(tunnel_name, row_id):  # 预测底板线
+    row_data = get_row_datas(tunnel_name, row_id)
+    id = row_data['id']
+    Datas = jun_pao_cad.objects.filter(jun_pao_row_id=id)
+    cunchu = pd.DataFrame()
+    for i in range(len(Datas)):
+        Data = model_to_dict(Datas[i])
+        if Data['jun_pao_see_coal_cad_x'] or Data['jun_pao_see_coal_cad_y'] is not None:
+            cunchu = cunchu.append(Data, ignore_index=True)
+
+    for i in range(len(cunchu)):
+        cunchu['jun_pao_hole_num'].loc[i] = int((cunchu['jun_pao_hole_num'].loc[i]))
+    cunchu = cunchu.sort_values('jun_pao_hole_num', ascending=True)
+    hanshu = get_regression(cunchu['jun_pao_see_coal_cad_x'], cunchu['jun_pao_see_coal_cad_y'])
+    y_pred = hanshu[0]
+    color = input("请输入颜色：")
+    set_color(color)
+    p1 = APoint(cunchu['jun_pao_see_coal_cad_x'].loc[0], y_pred[0])
+    p2 = APoint(cunchu['jun_pao_see_coal_cad_x'].loc[len(cunchu) - 1], y_pred[-1])
+    line = acad.model.AddLine(p1, p2)
+    line.TrueColor = clr
+    line.LineWeight = 20
+    # xian = APoint(cunchu['jun_pao_see_ceil_x'].loc[2], y_pred[2])
+    # if hanshu[2] < 0:
+    #     textString = "y = {}x{}".format(float(hanshu[1]), float(hanshu[2]))
+    # else:
+    #     textString = "y = {}x+{}".format(float(hanshu[1]), float(hanshu[2]))
+    # textObj = acad.model.AddText(textString, xian, 1.25)
+    # textObj.Alignment = 2
+    # textObj.TrueColor = clr
+    acad.ActiveDocument.preferences.LineweightDisplay = 1
+    acad.ActiveDocument.Application.ZoomAll()
+    acad.ActiveDocument.Application.Update()
+
+
+# draw_picture1('16071工作面中部底板巷', 15)
+
+
+def draw_picture2(tunnel_name, row_id):  # 顶板连线
+    row_data = get_row_datas(tunnel_name, row_id)
+    id = row_data['id']
+    Datas = jun_pao.objects.filter(jun_pao_row_id=id)
+    cunchu = pd.DataFrame()
+    for i in range(len(Datas)):
+        Data = model_to_dict(Datas[i])
+        if Data['jun_pao_see_ceil_x'] or Data['jun_pao_see_ceil_y'] is not None:
+            cunchu = cunchu.append(Data, ignore_index=True)
+
+    for i in range(len(cunchu)):
+        cunchu['jun_pao_hole_num'].loc[i] = int((cunchu['jun_pao_hole_num'].loc[i]))
+    cunchu = cunchu.sort_values('jun_pao_hole_num', ascending=True)
+
+    color = input("请输入颜色：")
+    set_color(color)
+    pnts = []
+    for i in range(len(cunchu['jun_pao_see_ceil_x'])):
+        if pd.isnull(cunchu['jun_pao_see_ceil_x'].loc[i]) is True:
+            break
+        else:
+            p1 = APoint(cunchu['jun_pao_see_ceil_x'].loc[i], cunchu['jun_pao_see_ceil_y'].loc[i])
+            pnts.append(p1)
+            sui_ji(p1)
+    pnts = [j for i in pnts for j in i]
+    pnts = aDouble(pnts)  # 数据类型转化为双精度浮点数
+    plineObj = acad.model.AddPolyLine(pnts)
+    plineObj.SetWidth(15, 15, 15)
+    plineObj.TrueColor = clr
+    acad.ActiveDocument.preferences.LineweightDisplay = 1
+    acad.ActiveDocument.Application.ZoomAll()
+    acad.ActiveDocument.Application.Update()
+
+
+# draw_picture2('16071工作面中部底板巷', 15)
+
+
+def draw_picture3(tunnel_name, row_id):  # 孔号文字
+    row_data = get_row_datas(tunnel_name, row_id)
+    id = row_data['id']
+    Datas = pao_wen_zi.objects.filter(pao_row_id=id)
+    cunchu = pd.DataFrame()
+    for i in range(len(Datas)):
+        Data = model_to_dict(Datas[i])
+        if Data['pao_wen_zi_x'] or Data['pao_wen_zi_y'] is not None:
+            cunchu = cunchu.append(Data, ignore_index=True)
+
+    for i in range(len(cunchu)):
+        cunchu['pao_hole_num'].loc[i] = int((cunchu['pao_hole_num'].loc[i]))
+    cunchu = cunchu.sort_values('pao_hole_num', ascending=True)
+
+    color = input("请输入颜色：")
+    set_color(color)
+    for i in range(len(cunchu)):
+        if pd.isnull(cunchu['pao_wen_zi_x'].loc[i]) is True:
+            break
+        else:
+            p1 = APoint(cunchu['pao_wen_zi_x'].loc[i], cunchu['pao_wen_zi_y'].loc[i])
+            textString = "{}#".format(cunchu['pao_hole_num'].loc[i])
+            textObj = acad.model.AddText(textString, p1, 1.25)
+            textObj.TrueColor = clr
+
+
+# draw_picture3('16071工作面中部底板巷', 15)
+
+
+def draw_picture4(tunnel_name, row_id):  # 钻孔岩段坐标
+    row_data = get_row_datas(tunnel_name, row_id)
+    id = row_data['id']
+    Datas = jun_pao.objects.filter(jun_pao_row_id=id)
+    cunchu = pd.DataFrame()
+    for i in range(len(Datas)):
+        Data = model_to_dict(Datas[i])
+        if Data['jun_pao_kai_x'] or Data['jun_pao_kai_y'] is not None:
+            cunchu = cunchu.append(Data, ignore_index=True)
+
+    for i in range(len(cunchu)):
+        cunchu['jun_pao_hole_num'].loc[i] = int((cunchu['jun_pao_hole_num'].loc[i]))
+    cunchu = cunchu.sort_values('jun_pao_hole_num', ascending=True)
+
+    color = input("请输入颜色：")
+    set_color(color)
+    for i in range(len(cunchu['jun_pao_kai_x'])):
+        if pd.isnull(cunchu['jun_pao_kai_x'].loc[i]) is True:
+            break
+        else:
+            p1 = APoint(cunchu['jun_pao_kai_x'].loc[i], cunchu['jun_pao_kai_y'].loc[i])
+            p2 = APoint(cunchu['jun_pao_see_coal_x'].loc[i], cunchu['jun_pao_see_coal_y'].loc[i])
+            line = acad.model.AddLine(p1, p2)
+            line.TrueColor = clr
+            line.LineWeight = 20
+
+
+# draw_picture4('16071工作面中部底板巷', 15)
+
+
+def draw_picture5(tunnel_name, row_id):  # 钻孔煤段坐标
+    row_data = get_row_datas(tunnel_name, row_id)
+    id = row_data['id']
+    Datas = jun_pao.objects.filter(jun_pao_row_id=id)
+    cunchu = pd.DataFrame()
+    for i in range(len(Datas)):
+        Data = model_to_dict(Datas[i])
+        if Data['jun_pao_see_coal_x'] or Data['jun_pao_see_coal_y'] is not None:
+            cunchu = cunchu.append(Data, ignore_index=True)
+
+    for i in range(len(cunchu)):
+        cunchu['jun_pao_hole_num'].loc[i] = int((cunchu['jun_pao_hole_num'].loc[i]))
+    cunchu = cunchu.sort_values('jun_pao_hole_num', ascending=True)
+
+    color = input("请输入颜色：")
+    set_color(color)
+    for i in range(len(cunchu['jun_pao_see_coal_x'])):
+        if pd.isnull(cunchu['jun_pao_see_coal_x'].loc[i]) is True:
+            break
+        else:
+            p1 = APoint(cunchu['jun_pao_see_coal_x'].loc[i], cunchu['jun_pao_see_coal_y'].loc[i])
+            p2 = APoint(cunchu['jun_pao_zhong_kong_x'].loc[i], cunchu['jun_pao_zhong_kong_y'].loc[i])
+            line = acad.model.AddLine(p1, p2)
+            line.TrueColor = clr
+            line.LineWeight = 30
+
+
+# draw_picture5('16071工作面中部底板巷', 15)
+
+
+def draw_picture6(tunnel_name, row_id):  # 底板连线
+    row_data = get_row_datas(tunnel_name, row_id)
+    id = row_data['id']
+    Datas = jun_pao.objects.filter(jun_pao_row_id=id)
+    cunchu = pd.DataFrame()
+    for i in range(len(Datas)):
+        Data = model_to_dict(Datas[i])
+        if Data['jun_pao_see_coal_x'] or Data['jun_pao_see_coal_y'] is not None:
+            cunchu = cunchu.append(Data, ignore_index=True)
+
+    for i in range(len(cunchu)):
+        cunchu['jun_pao_hole_num'].loc[i] = int((cunchu['jun_pao_hole_num'].loc[i]))
+    cunchu = cunchu.sort_values('jun_pao_hole_num', ascending=True)
+
+    color = input("请输入颜色：")
+    set_color(color)
+    pnts = []
+    for i in range(len(cunchu['jun_pao_see_coal_x'])):
+        if pd.isnull(cunchu['jun_pao_see_coal_x'].loc[i]) is True:
+            break
+        else:
+            pnts.append(APoint(cunchu['jun_pao_see_coal_x'].loc[i], cunchu['jun_pao_see_coal_y'].loc[i]))
+    pnts = [j for i in pnts for j in i]
+    pnts = aDouble(pnts)  # 数据类型转化为双精度浮点数
+    plineObj = acad.model.AddPolyLine(pnts)
+    plineObj.SetWidth(15, 15, 15)
+    plineObj.TrueColor = clr
+    length = len(cunchu['jun_pao_see_coal_x'])
+    half = len(cunchu['jun_pao_see_coal_x']) // 2
+    p1 = APoint(cunchu['jun_pao_see_coal_x'].loc[0], cunchu['jun_pao_see_coal_y'].loc[0])
+    p2 = APoint(cunchu['jun_pao_see_coal_x'].loc[half], cunchu['jun_pao_see_coal_y'].loc[half])
+    p3 = APoint(cunchu['jun_pao_see_coal_x'].loc[length - 1], cunchu['jun_pao_see_coal_y'].loc[length - 1])
+    TextPosition = APoint(cunchu['jun_pao_see_coal_x'].loc[half] + 10, cunchu['jun_pao_see_coal_y'].loc[half])
+    dimAliObj1 = acad.model.AddDimAligned(p1, p2, TextPosition)
+    dimAliObj2 = acad.model.AddDimAligned(p2, p3, TextPosition)
+    dimAliObj1.TrueColor = clr
+    dimAliObj2.TrueColor = clr
+    acad.ActiveDocument.preferences.LineweightDisplay = 1
+    acad.ActiveDocument.Application.ZoomAll()
+    acad.ActiveDocument.Application.Update()
+
+
+# draw_picture6('16071工作面中部底板巷', 15)
+
+
+def draw_picture7(tunnel_name, row_id):  # 排号文字
+    row_data = get_row_datas(tunnel_name, row_id)
+    id = row_data['id']
+    Datas = jun_pao.objects.filter(jun_pao_row_id=id)
+    cunchu = pd.DataFrame()
+    for i in range(len(Datas)):
+        Data = model_to_dict(Datas[i])
+        if Data['jun_pao_kai_x'] or Data['jun_pao_kai_y'] is not None:
+            cunchu = cunchu.append(Data, ignore_index=True)
+
+    for i in range(len(cunchu)):
+        cunchu['jun_pao_hole_num'].loc[i] = int((cunchu['jun_pao_hole_num'].loc[i]))
+    cunchu = cunchu.sort_values('jun_pao_hole_num', ascending=True)
+
+    color = input("请输入颜色：")
+    set_color(color)
+    if pd.isnull(cunchu['jun_pao_row'].loc[i]) is True:
+        os._exit(0)
+    else:
+        p1 = APoint(cunchu['jun_pao_kai_x'].loc[i], cunchu['jun_pao_kai_y'].loc[i])
+        textString = "{}".format(row_id)
+        textObj = acad.model.AddText(textString, p1, 1.25)
+        textObj.TrueColor = clr
+
+
+# draw_picture7('16071工作面中部底板巷', 15)
+
+
+def draw_picture8(mine_name, tunnel_name, row_id):  # 斜距标注坐标
+    work_data = get_work_datas(mine_name)
+    up_tunnel_up = work_data['up_tunnel_up']
+    down_tunnel_tunnel = work_data['down_tunnel_tunnel']
+    qie_yan_qie = work_data['qie_yan_qie']
+    tunnel_data = get_tunnel_datas(tunnel_name)
+    di_ban_hang_hight = tunnel_data['di_ban_hang_hight']
+    hole_height = tunnel_data['hole_height']
+    row_data = get_row_datas(tunnel_name, row_id)
+    id = row_data['id']
+    Datas = jun_pao_cad.objects.filter(jun_pao_row_id=id)
+    cunchu = pd.DataFrame()
+    for i in range(len(Datas)):
+        Data = model_to_dict(Datas[i])
+        if Data['jun_pao_kai_cad_x'] or Data['jun_pao_kai_cad_y'] is not None:
+            cunchu = cunchu.append(Data, ignore_index=True)
+
+    for i in range(len(cunchu)):
+        cunchu['jun_pao_hole_num'].loc[i] = int((cunchu['jun_pao_hole_num'].loc[i]))
+    cunchu = cunchu.sort_values('jun_pao_hole_num', ascending=True)
+    hanshu1 = get_regression(cunchu['jun_pao_kai_cad_x'], cunchu['jun_pao_kai_cad_y'])
+    y1_pred = hanshu1[0]
+    hanshu2 = get_regression(cunchu['jun_pao_see_coal_cad_x'], cunchu['jun_pao_see_coal_cad_y'])
+    y2_pred = hanshu2[0]
+    y2_pred_a = hanshu2[1]
+    y2_pred_b = hanshu2[2]
+    color = input("请输入颜色：")
+    set_color(color)
+    p1 = APoint(cunchu['jun_pao_kai_cad_x'].loc[0],
+                cunchu['jun_pao_kai_cad_y'].loc[0] + di_ban_hang_hight - hole_height)
+    p2 = APoint(cunchu['jun_pao_kai_x'].loc[0], y1_pred[0])
+    textPoint1 = (p1 + p2) / 2
+    dimRotObj1 = acad.model.AddDimAligned(p1, p2, textPoint1)
+    dimRotObj1.TextOverride = cunchu['jun_pao_hole_num'].loc[0]
+
+    p3 = APoint(cunchu['jun_pao_see_coal_cad_x'].loc[0], y2_pred[0])  # 左侧
+    p4 = APoint(cunchu['jun_pao_kai_x'].loc[len(cunchu) - 1], y2_pred[-1])  # 右侧
+    textPoint2 = (p3 + p4) / 2
+    dimRotObj2 = acad.model.AddDimAligned(p3, p4, textPoint2)
+    dimRotObj2.TextOverride = cunchu['jun_pao_hole_num'].loc[0]
+
+    p5 = APoint(cunchu['jun_pao_see_coal_cad_x'].loc[12] + up_tunnel_up,
+                y2_pred_a * (cunchu['jun_pao_see_coal_cad_x'].loc[12] + up_tunnel_up) + y2_pred_b)
+    textPoint3 = (p3 + p5) / 2
+    dimRotObj3 = acad.model.AddDimAligned(p3, p5, textPoint3)
+    dimRotObj3.TextOverride = cunchu['jun_pao_hole_num'].loc[0]
+
+    p6 = APoint(cunchu['jun_pao_see_coal_cad_x'].loc[12] + down_tunnel_tunnel,
+                y2_pred_a * (cunchu['jun_pao_see_coal_cad_x'].loc[12] + down_tunnel_tunnel) + y2_pred_b)
+    textPoint4 = (p4 + p6) / 2
+    dimRotObj4 = acad.model.AddDimAligned(p4, p6, textPoint4)
+    dimRotObj4.TextOverride = cunchu['jun_pao_hole_num'].loc[0]
+
+    # dimRotObj.TrueColor = clr
+    # dimRotObj.Update()
+
+
+# draw_picture8('16071工作面中部底板巷', 15)
+
+
+def draw_picture9(tunnel_name, row_id):  # 图例标注坐标
+    row_data = get_row_datas(tunnel_name, row_id)
+    id = row_data['id']
+    Datas = Completion_plan_coordinate.objects.filter(completion_row_id=id)
+    cunchu = pd.DataFrame()
+    for i in range(len(Datas)):
+        Data = model_to_dict(Datas[i])
+        if Data['pen_hole_x'] or Data['pen_hole_y'] is not None:
+            cunchu = cunchu.append(Data, ignore_index=True)
+
+    for i in range(len(cunchu)):
+        cunchu['completion_hole_num'].loc[i] = int((cunchu['completion_hole_num'].loc[i]))
+    cunchu = cunchu.sort_values('completion_hole_num', ascending=True)
+
+    color = input("请输入颜色：")
+    set_color(color)
+    for i in range(len(cunchu)):
+        if pd.isnull(cunchu['pen_hole_x'].loc[i]) is True:
+            break
+        else:
+            p1 = APoint(cunchu['pen_hole_x'].loc[i], cunchu['pen_hole_y'].loc[i])
+            textString = "{}#".format(cunchu['completion_hole_num'].loc[i])
+            textObj = acad.model.AddText(textString, p1, 1.25)
+            textObj.TrueColor = clr
+# draw_picture9('16071工作面中部底板巷', 15)

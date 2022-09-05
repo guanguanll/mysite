@@ -65,7 +65,7 @@
                 </li>
                 <li class="layui-nav-item" lay-unselect>
                     <a href="javascript:;">
-                        <cite>贤心</cite>
+                        <cite>{{ userName }}</cite>
                     </a>
                     <dl class="layui-nav-child">
                         <dd><a lay-href="info.html">基本资料</a></dd>
@@ -94,15 +94,15 @@
 
                 <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu"
                     lay-filter="layadmin-system-side-menu">
-                    <li data-name="home" class="layui-nav-item">
-                        <a href="javascript:;" lay-tips="实验管理" lay-direction="2">
-                            <i class="layui-icon layui-icon-survey"></i>
-                            <cite>巷道管理</cite>
-                        </a>
-                        <dl class="layui-nav-child">
-                            <dd data-name="console"><a lay-href="{% url 'Mining:drill_roadway_choosed' %}">巷道选择</a></dd>
-                        </dl>
-                    </li>
+{#                    <li data-name="home" class="layui-nav-item">#}
+{#                        <a href="javascript:;" lay-tips="实验管理" lay-direction="2">#}
+{#                            <i class="layui-icon layui-icon-survey"></i>#}
+{#                            <cite>巷道管理</cite>#}
+{#                        </a>#}
+{#                        <dl class="layui-nav-child">#}
+{#                            <dd data-name="console"><a lay-href="{% url 'Mining:drill_roadway_choosed' %}">巷道选择</a></dd>#}
+{#                        </dl>#}
+{#                    </li>#}
 
                     <li data-name="home" class="layui-nav-item">
                         <a href="javascript:;" lay-tips="实验管理" lay-direction="2">
@@ -112,17 +112,18 @@
                         <dl class="layui-nav-child">
                             <dd data-name="console"><a lay-href="{% url 'Mining:drilling_construction_params' %}">打孔申请</a></dd>
                         </dl>
-                    </li>
-
-                    <li data-name="home" class="layui-nav-item">
-                        <a href="javascript:;" lay-tips="实验管理" lay-direction="2">
-                            <i class="layui-icon layui-icon-survey"></i>
-                            <cite>钻孔设计</cite>
-                        </a>
                         <dl class="layui-nav-child">
-                            <dd data-name="console"><a lay-href="{% url 'Mining:drilling_construction_params' %}">钻孔设计参数</a></dd>
+                            <dd data-name="console"><a lay-href="{% url 'Mining:drilling_design_params' %}">打孔申请记录</a></dd>
                         </dl>
                     </li>
+
+{#                    <li data-name="home" class="layui-nav-item">#}
+{#                        <a href="javascript:;" lay-tips="实验管理" lay-direction="2">#}
+{#                            <i class="layui-icon layui-icon-survey"></i>#}
+{#                            <cite>钻孔设计</cite>#}
+{#                        </a>#}
+{##}
+{#                    </li>#}
 
                     <li data-name="process" class="layui-nav-item">
                         <a href="javascript:;" lay-tips="实验管理" lay-direction="2">
@@ -130,7 +131,10 @@
                             <cite>钻孔施工</cite>
                         </a>
                         <dl class="layui-nav-child">
-                            <dd data-name="console"><a lay-href="{% url 'Mining:goto_drill_construct_list_page' %}">施工参数</a></dd>
+                            <dd data-name="console"><a lay-href="{% url 'Mining:goto_drill_construct_layer_page' %}">施工参数填报</a></dd>
+                        </dl>
+                        <dl class="layui-nav-child">
+                            <dd data-name="console"><a lay-href="{% url 'Mining:goto_drill_construct_list_page' %}">施工参数填报记录</a></dd>
                         </dl>
                     </li>
 
@@ -140,7 +144,13 @@
                             <cite>钻孔冲煤</cite>
                         </a>
                         <dl class="layui-nav-child">
-                            <dd data-name="console"><a lay-href="{% url 'Mining:goto_flush_drill_list_page' %}">冲煤参数</a></dd>
+                            <dd data-name="console"><a lay-href="{% url 'Mining:flush_apply_index' %}">冲煤申请</a></dd>
+                        </dl>
+                        <dl class="layui-nav-child">
+                            <dd data-name="console"><a lay-href="{% url 'Mining:goto_flush_drill_layer_page' %}">冲煤参数填报</a></dd>
+                        </dl>
+                        <dl class="layui-nav-child">
+                            <dd data-name="console"><a lay-href="{% url 'Mining:goto_flush_drill_list_page' %}">冲煤参数填报记录</a></dd>
                         </dl>
                     </li>
 
@@ -150,7 +160,13 @@
                             <cite>封孔施工</cite>
                         </a>
                         <dl class="layui-nav-child">
-                            <dd data-name="console"><a lay-href="{% url 'Mining:goto_feng_drill_list_page' %}">封孔参数</a></dd>
+                            <dd data-name="console"><a lay-href="{% url 'Mining:feng_apply_index' %}">封孔申请</a></dd>
+                        </dl>
+                        <dl class="layui-nav-child">
+                            <dd data-name="console"><a lay-href="{% url 'Mining:goto_feng_drill_layer_page' %}">封孔参数填报</a></dd>
+                        </dl>
+                        <dl class="layui-nav-child">
+                            <dd data-name="console"><a lay-href="{% url 'Mining:goto_feng_drill_list_page' %}">封孔参数填报记录</a></dd>
                         </dl>
                     </li>
 

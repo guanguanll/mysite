@@ -3,20 +3,30 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>钻孔设计参数</title>
+    <title>施工列表</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <link rel="stylesheet" href="{% static 'layuiadmin/layui/css/layui.css' %}">
     <link rel="stylesheet" href="{% static 'layuiadmin/style/admin.css' %}">
+
+    <style type="text/css">
+        .layui-form-label {
+            width: 100px;
+        }
+
+        .layui-input-block {
+            margin-left: 130px;
+        }
+    </style>
 </head>
 
 <body layadmin-themealias="default">
 <div class="layui-fluid">
     <div class="layui-card">
-        <div class="layui-card-body">
-            <blockquote class="layui-elem-quote">钻孔设计参数查询</blockquote>
+        <div class="layui-card-body">、
+            <blockquote class="layui-elem-quote">施工参数查询</blockquote>
             <form class="layui-form" action="">
                 <div class="layui-inline">
                     <div class="layui-form-item">
@@ -70,9 +80,21 @@
                         </div>
                     </div>
                 </div>
+                <div class="layui-form-item" id="hide" style="display:none; margin-top:20px">
+                    <label class="layui-form-label">驳回原因</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="reason" id="reason" required lay-verify="required"
+                               placeholder="请输入驳回原因"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                    <br>
+                    <br>
+                    <p style="font-size: smaller; color: red">*注意：若“跳过”冲孔步骤，请填写“跳过”，否则，按照实际情况填写具体原因</p>
+                </div>
+
             </form>
             <div class="layui-field-box">
-                <table class="layui-hide" id="table" lay-filter="test"></table>
+                <table id="demo" lay-filter="test" class="layui-hide"></table>
             </div>
         </div>
     </div>
@@ -82,24 +104,22 @@
 
 <script src="{% static 'js/jquery-1.11.1.min.js' %}"></script>
 <script src="{% static 'layuiadmin/layui/layui.js' %}"></script>
+{#<script type="text/html" id="ToolbarDemo">#}
+{#    <a class="layui-btn layui-btn-xs layui-btn-radius" lay-event="detail">填报</a>#}
+{#</script>#}
+
 <script type="text/html" id="barDemo">
-    {% verbatim %}
-    {{# if(d.status == 2){ }}
-    <div class="layui-btn layui-btn-danger layui-btn-xs" lay-event="reSubmit">重新申请</div>
-    <div class="layui-btn layui-btn-danger layui-btn-xs" lay-event="newHole">跳过</div>
-    {{# } else{ }}
-    <div class="layui-btn layui-btn-disabled layui-btn-xs">重新申请</div>
-    <div class="layui-btn layui-btn-disabled layui-btn-xs">跳过</div>
-    {{# } }}
-    {% endverbatim %}
+    <a class="layui-btn layui-btn-xs layui-btn-radius layui-btn-normal" lay-event="pass">通过</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="reject">驳回</a>
 </script>
+
 <script>
-    layui.use(['table', 'upload', 'layer'], function () {
+    layui.use(['table', 'upload', 'layer', 'laydate', 'form'], function () {
         var table = layui.table;
         var layer = layui.layer;
         var $ = layui.$;
+        var laydate = layui.laydate;
         var form = layui.form;
-
         //工作面选择
         form.on('select(work_face)', function (data) {
             var work_face = $("#work_face").val();
@@ -114,6 +134,7 @@
                     //先给一个空选项
                     $("#tunnel").append($("<option />").text("").attr("value", ""));
                     console.log("data is " + data.data, JSON.stringify(data.data));
+                    {#console.log(JSON.parse(data.data))#}
                     tunnelObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
                     console.log(tunnelObjs, 'tunnelObjs')
                     tunnelObjs.map((item, index) => {
@@ -149,32 +170,38 @@
                     });
                     form.render();
                 })
+            $
         });
-        var tb = table.render({
-            elem: "#table",
+        tb = table.render({
+            elem: '#demo',
+            toolbar: '#toolbarDemo',
             id: "tableReload",
-            url: '{% url 'reloadDrillingDesignParams' %}',
-            method: 'get',
-            height: 'full-30',
-            page: true,
             defaultToolbar: ['filter', 'exports', 'print'],
+            height: 'full-200',
+            url: "{% url 'flush_drill_list_data' %}",        //数据接口
             cols: [[
-                {field: 'id', width: '7%', title: 'ID', sort: true, align: 'center', hide: true,},
-                {field: 'pai_num', width: '7%', title: '排号', sort: true, align: 'center',},
-                {field: 'kong_num', width: '7%', title: '孔号', sort: true, align: 'center',},
-                {field: 'pian_angle', width: '7%', title: '偏角', sort: true, align: 'center',},
-                {field: 'yang_angle', width: '7%', title: '仰角', sort: true, align: 'center',},
-                {field: 'kong_length', width: '7%', title: '孔深', sort: true, align: 'center',},
-                {field: 'yan_kong_length', width: '9%', title: '岩孔长度', sort: true, align: 'center',},
-                {field: 'mei_duan_length', width: '9%', title: '煤段长度', sort: true, align: 'center',},
-                {field: 'wash_coal', width: '8%', title: '冲煤量', sort: true, align: 'center',},
-                {field: 'see_ding_tip', width: '10%', title: '见顶提醒', sort: true, align: 'center',},
-                {field: 'see_mei_tip', width: '10%', title: '见煤提醒', sort: true, align: 'center',},
-                {field: 'desc', width: '10%', title: '状态', sort: true, align: 'center',},
-                {field: 'status', width: '5%', title: '状态码', sort: true, align: 'center', hide: true},
-                {fixed: 'right', width: '10%', title: '操作', align: 'center', toolbar: '#barDemo'},
-            ]]
+                {type: 'checkbox', fixed: 'left', align: "center"},
+                {field: 'id', title: 'ID', width: 60, sort: true, fixed: 'left', align: "center"},
+                {field: 'row', title: '排号', width: 100, align: "center"},
+                {field: 'h_c_number', title: '孔号', width: 100, align: "center"},
+                {field: 'time', title: '冲孔日期', width: 100, align: "center"},
+                {field: 'actual_flush_mei', title: '应冲煤量', width: 120, align: "center"},
+                {field: 'flush_water_pressure', title: '冲孔水压', width: 120, align: "center"},
+                {field: 'kong_radius', title: '孔径', width: 120, align: "center"},
+                {field: 'water_start_time', title: '水力冲孔开始时间', width: 150, align: "center"},
+                {field: 'water_end_time', title: '水力冲孔结束时间', width: 150, align: "center"},
+                {field: 'coal_rush_quantity_length', title: '当班冲煤量的长', width: 120, align: "center"},
+                {field: 'coal_rush_quantity_wide', title: '当班冲煤量的宽', width: 120, align: "center"},
+                {field: 'coal_rush_quantity_height', title: '当班冲煤量的高', width: 120, align: "center"},
+                {field: 'flush_volume', title: '冲煤体积', width: 100, align: "center"},
+                {field: 'chong_drill_eval', title: '冲孔评价', width: 100, align: "center"},
+                {field: 'construction_person_name', title: '施工负责人', width: 100, align: "center"},
+                {field: 'text_person', title: '验收负责人', width: 100, align: "center"},
+                {fixed: 'right', title: '操作', toolbar: '#barDemo', width: 120, align: 'center'}
+            ]],
+            page: true,     //开启分页
         });
+
         var $ = layui.$, active = {
             reload: function () {
                 var kong_num = $('#kong_num').val();
@@ -184,7 +211,7 @@
                 //执行重载
                 table.reload('tableReload', {
                     method: 'get',
-                    url: '{% url 'reloadDrillingDesignParams' %}',
+                    url: "{% url 'flush_drill_list_data' %}",
                     where: {
                         kong_num: kong_num,
                         rowId: rowId
@@ -216,28 +243,96 @@
             }
             return false;
         });
-        //监听行工具事件 主要是监听驳回状态设计孔进行重新申请事件
+        $('.layui-btn').on('click', function () {
+            var workface = $("#work_face").val();
+            var tunnel = $("#tunnel").val();
+            var row = $("#row").val();
+            if (workface === "") {
+                layer.msg('请进行工作面选择', {icon: 5});
+            } else if (tunnel === "") {
+                layer.msg('请进行巷道选择', {icon: 5});
+            } else if (row === "") {
+                layer.msg('请进行排号选择', {icon: 5});
+            } else {
+                var type = $(this).data('type');
+                active[type] ? active[type].call(this) : '';
+            }
+            return false;
+        });
+        //监听行工具事件
         table.on('tool(test)', function (obj) {
             var data = obj.data;
             id = data.id
-            if (obj.event === 'reSubmit') {
-                layer.confirm('确定重新提交吗？', function (index) {
+            console.log(data);
+            hole_number = data.h_c_number
+            if (obj.event === 'pass') {
+                layer.confirm('确定通过申请吗？', function (index) {
                     $.post(
-                        {% url 'resubmitHoleDesign' %},
-                        {"id": id},
+                        {% url 'passOrrejectFlushHole' %},
+                        {
+                            "id": id,
+                            "hole_number": hole_number,
+                            "beforeStatus": 0,
+                            "status": 1,
+                            "reason": ""
+                        },
                         function (res) {
                             if (res.code === "0") {
                                 tb.reload();
-                                layer.msg("重新提交成功", {icon: 1});
+                                layer.msg("申请通过成功", {icon: 1});
                             } else {
-                                layer.msg("重新提交失败," + res.msg, {icon: 5});
+                                layer.msg("申请通过失败," + res.msg, {icon: 5});
                             }
                         })
                     return false;
                 });
             }
-            if(obj.event === 'newHole'){
+            if (obj.event === 'reject') {
+                layer.open({
+                    type: 1,
+                    content: $('#hide'),
+                    title: '冲孔申请驳回',
+                    area: ['390px', '260px'],
+                    shade: 0.3,
+                    maxmin: true,
+                    btnAlign: 'c',
+                    content: $("#hide"),
+                    btn: ['提交', '全部关闭'], //只是为了演示
+                    yes: function () {
+                        var reason = $("#reason").val();
+                        if (reason === "") {
+                            layer.msg('请输入驳回原因', {icon: 5});
+                        } else {
+                            layer.confirm('确定驳回吗？', function (index) {
+                                $.post(
+                                    {% url 'passOrrejectFlushHole' %},
+                                    {
+                                        "id": id,
+                                        "hole_number": hole_number,
+                                        "beforeStatus": 0,
+                                        "status": 2,
+                                        "reason": reason
+                                    },
+                                    function (res) {
+                                        if (res.code === "0") {
+                                            tb.reload();
+                                            layer.closeAll();
+                                            layer.msg("申请驳回成功", {icon: 1});
 
+                                        } else {
+                                            layer.closeAll();
+                                            layer.msg("申请驳回失败," + res.msg, {icon: 5});
+                                        }
+                                    })
+                                return false;
+                            });
+                        }
+                    }
+                    ,
+                    btn2: function () {
+                        layer.closeAll();
+                    }
+                })
             }
         });
     });

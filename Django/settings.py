@@ -29,13 +29,14 @@ STATIC_URL = '/static/'
 SECRET_KEY = 'zvi0=ix6h+ev)+$=0a61sh@1sefk4&o8w($3l7th+at!+c7jua'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
 # Application definition
 
 INSTALLED_APPS = [
+    'simpleui',
     'import_export',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -87,7 +88,7 @@ WSGI_APPLICATION = 'Django.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'HPU_Mining',
+        'NAME': 'coal',
         'USER': 'root',
         'PASSWORD': 'll960616',
         'HOST': 'liu-lili-pc.mysql.rds.aliyuncs.com',
@@ -151,3 +152,49 @@ SIMPLEUI_HOME_QUICK = True      # 快速操作
 STATICFILES_DIRS = [  # 列表或者元组都行
     os.path.join(BASE_DIR, 'static')
 ]
+
+# 日志配置
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(lineno)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(module)s %(lineno)d %(message)s'
+        },
+    },
+    'filters': {
+        'require_debug_true': {  # 项目上线，require_debug_true去掉
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(os.path.dirname(BASE_DIR), "logs/"),
+            'maxBytes': 300 * 1024 * 1024,
+            'backupCount': 10,
+            'formatter': 'verbose',
+            'encoding': 'utf-8',
+        },
+    },
+
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],  # 项目上线，console去掉
+            'propagate': True,
+        },
+    }
+}

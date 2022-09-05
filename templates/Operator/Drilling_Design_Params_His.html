@@ -3,7 +3,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>钻孔设计参数</title>
+    <title>打孔申请审批</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport"
@@ -82,17 +82,6 @@
 
 <script src="{% static 'js/jquery-1.11.1.min.js' %}"></script>
 <script src="{% static 'layuiadmin/layui/layui.js' %}"></script>
-<script type="text/html" id="barDemo">
-    {% verbatim %}
-    {{# if(d.status == 2){ }}
-    <div class="layui-btn layui-btn-danger layui-btn-xs" lay-event="reSubmit">重新申请</div>
-    <div class="layui-btn layui-btn-danger layui-btn-xs" lay-event="newHole">跳过</div>
-    {{# } else{ }}
-    <div class="layui-btn layui-btn-disabled layui-btn-xs">重新申请</div>
-    <div class="layui-btn layui-btn-disabled layui-btn-xs">跳过</div>
-    {{# } }}
-    {% endverbatim %}
-</script>
 <script>
     layui.use(['table', 'upload', 'layer'], function () {
         var table = layui.table;
@@ -153,7 +142,7 @@
         var tb = table.render({
             elem: "#table",
             id: "tableReload",
-            url: '{% url 'reloadDrillingDesignParams' %}',
+            url: '{% url 'operator_reload_DrillingDesignParamsHis' %}',
             method: 'get',
             height: 'full-30',
             page: true,
@@ -167,12 +156,11 @@
                 {field: 'kong_length', width: '7%', title: '孔深', sort: true, align: 'center',},
                 {field: 'yan_kong_length', width: '9%', title: '岩孔长度', sort: true, align: 'center',},
                 {field: 'mei_duan_length', width: '9%', title: '煤段长度', sort: true, align: 'center',},
-                {field: 'wash_coal', width: '8%', title: '冲煤量', sort: true, align: 'center',},
-                {field: 'see_ding_tip', width: '10%', title: '见顶提醒', sort: true, align: 'center',},
-                {field: 'see_mei_tip', width: '10%', title: '见煤提醒', sort: true, align: 'center',},
-                {field: 'desc', width: '10%', title: '状态', sort: true, align: 'center',},
+                {field: 'wash_coal', width: '9%', title: '冲煤量', sort: true, align: 'center',},
+                {field: 'see_ding_tip', width: '20%', title: '见顶提醒', sort: true, align: 'center',},
+                {field: 'see_mei_tip', width: '20%', title: '见煤提醒', sort: true, align: 'center',},
+                {field: 'desc', width: '10%', title: '状态', sort: true, align: 'center'},
                 {field: 'status', width: '5%', title: '状态码', sort: true, align: 'center', hide: true},
-                {fixed: 'right', width: '10%', title: '操作', align: 'center', toolbar: '#barDemo'},
             ]]
         });
         var $ = layui.$, active = {
@@ -184,7 +172,7 @@
                 //执行重载
                 table.reload('tableReload', {
                     method: 'get',
-                    url: '{% url 'reloadDrillingDesignParams' %}',
+                    url: '{% url 'operator_reload_DrillingDesignParamsHis' %}',
                     where: {
                         kong_num: kong_num,
                         rowId: rowId
@@ -215,30 +203,6 @@
                 active[type] ? active[type].call(this) : '';
             }
             return false;
-        });
-        //监听行工具事件 主要是监听驳回状态设计孔进行重新申请事件
-        table.on('tool(test)', function (obj) {
-            var data = obj.data;
-            id = data.id
-            if (obj.event === 'reSubmit') {
-                layer.confirm('确定重新提交吗？', function (index) {
-                    $.post(
-                        {% url 'resubmitHoleDesign' %},
-                        {"id": id},
-                        function (res) {
-                            if (res.code === "0") {
-                                tb.reload();
-                                layer.msg("重新提交成功", {icon: 1});
-                            } else {
-                                layer.msg("重新提交失败," + res.msg, {icon: 5});
-                            }
-                        })
-                    return false;
-                });
-            }
-            if(obj.event === 'newHole'){
-
-            }
         });
     });
 </script>

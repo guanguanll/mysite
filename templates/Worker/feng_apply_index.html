@@ -3,7 +3,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>冲孔数据填报</title>
+    <title>封孔数据填报</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport"
@@ -63,7 +63,7 @@
 <div class="layui-fluid">
     <div class="layui-card">
         <div class="layui-card-body">
-            <blockquote class="layui-elem-quote">封孔参数填报</blockquote>
+            <blockquote class="layui-elem-quote">封孔申请</blockquote>
             <form class="layui-form" action="">
                 <table class="layui-table">
                     <tr>
@@ -119,115 +119,9 @@
                                 </select>
                             </div>
                         </td>
-                        <td>
-                            <div class="layui-inline">
-                                <label class="layui-form-label">封孔日期</label></div>
-                        </td>
-                        <td>
-                            <div class="layui-input-inline">
-                                <input type="text" name="feng_date" lay-verify="required" id="feng_date"
-                                       autocomplete="off"
-                                       class="layui-input" placeholder="yyyy-MM-dd HH:mm:ss">
-                            </div>
-                        </td>
-                        <td>
-                            <div class="layui-inline">
-                                <label class="layui-form-label">封孔深度(m)</label></div>
-                        </td>
-                        <td>
-                            <div class="layui-input-inline">
-                                <input type="tel" name="feng_kong_length" id="feng_kong_length"
-                                       lay-verify="required|number"
-                                       autocomplete="off"
-                                       class="layui-input" placeholder="请输入封孔深度">
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="layui-inline">
-                                <label class="layui-form-label">筛管长度(m)</label></div>
-                        </td>
-                        <td>
-                            <div class="layui-input-inline">
-                                <input type="text" name="shai_guan_length" id="shai_guan_length"
-                                       lay-verify="required|number"
-                                       autocomplete="off"
-                                       class="layui-input" placeholder="请输入筛管长度">
-                            </div>
-                        </td>
-                        <td>
-                            <div class="layui-inline">
-                                <label class="layui-form-label">注浆量(kg)</label>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="layui-input-inline">
-                                <input type="text" name="zhu_jiang_count" id="zhu_jiang_count" autocomplete="off"
-                                       lay-verify="required|number"
-                                       class="layui-input" placeholder="请输入注浆量">
-                            </div>
-                        </td>
-                        <td>
-                            <div class="layui-inline">
-                                <label class="layui-form-label">注浆压力(MPa)</label>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="layui-input-inline">
-                                <input type="text" name="zhu_jiang_pressure" id="zhu_jiang_pressure" autocomplete="off"
-                                       lay-verify="required|number"
-                                       class="layui-input" placeholder="请输入注浆压力">
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="layui-inline">
-                                <label class="layui-form-label">封孔评价</label>
-                            </div>
-                        </td>
-                        <td colspan="5">
-                            <div class="layui-input-inline">
-                <textarea placeholder="系统生成" class="layui-textarea" lay-verify="required" style="width:99%"
-                          name="assess_feng_kong" id="assess_feng_kong"></textarea>
-                                <button class="layui-btn" id="pingjia" type="button">点击生成评价</button>
-
-                            </div>
-                        </td>
-
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="layui-inline">
-                                <label class="layui-form-label">施工负责人</label>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="layui-input-inline">
-                                <input type="tel" name="work_person" id="work_person" autocomplete="off"
-                                       lay-verify="required"
-                                       class="layui-input">
-                            </div>
-                        </td>
-                        <td colspan="2"></td>
-                        <td>
-                            <div class="layui-inline">
-                                <label class="layui-form-label">验收负责人</label>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="layui-input-inline">
-                                <input type="text" name="check_person" id="check_person" autocomplete="off"
-                                       lay-verify="required"
-                                       class="layui-input">
-                            </div>
-                        </td>
                     </tr>
                 </table>
                 <br><br>
-                <input type="text" id="meiDuanLength" class="layui-input" style="display:none">
-
                 <div class="layui-form-item" style="text-align: center;">
                     <div class="layui-input-block">
                         <button type="submit" class="layui-btn" lay-submit="" lay-filter="demo1">立即提交</button>
@@ -246,19 +140,10 @@
 <script src="{% static 'layuiadmin/layui/layui.js' %}"></script>
 
 <script>
-    layui.use(['form', 'layedit', 'laydate'], function () {
-        var form = layui.form, layer = layui.layer, layedit = layui.layedit, laydate = layui.laydate;
-        var meiDuanLength = $("#meiDuanLength").val();
-        //日期
-        laydate.render({
-            elem: '#date',
-            type: 'datetime'
-
-        });
-        laydate.render({
-            elem: '#feng_date',
-            type: 'datetime'
-        });
+    layui.use(['form', 'layer'], function () {
+        var form = layui.form, layer = layui.layer;
+        var $ = layui.$;
+        ;
         //工作面选择
         form.on('select(work_face)', function (data) {
             var work_face = $("#work_face").val();
@@ -334,46 +219,6 @@
                     form.render();
                 })
         });
-        //表单校验
-        form.verify({
-            number: function (value) {
-                const patt = /^[0-9]+(\.[0-9]{1,3})?$/g;
-                let isPass = patt.test(value);
-                console.log("isPass", isPass)
-                if (!isPass) {
-                    return '该项必须为数字且最多保留三位小数';
-                }
-            }
-        });
-        $('#shai_guan_length').on("change", function (data) {
-            $("#assess_feng_kong").val("");
-        });
-        $('#zhu_jiang_count').on("change", function (data) {
-            $("#assess_feng_kong").val("");
-        });
-
-        $('#pingjia').on("focus", function (data) {
-            var shai_guan_length = $("#shai_guan_length").val();
-            var zhu_jiang_count = $("#zhu_jiang_count").val();
-            console.log(shai_guan_length);
-            console.log(shai_guan_length);
-            console.log(meiDuanLength);
-            if (!shai_guan_length) {
-                layer.alert("筛管长度未填写");
-            } else if (!zhu_jiang_count) {
-                layer.alert("注浆量未填写");
-            }
-            if (shai_guan_length - meiDuanLength < 0) {
-                layer.alert("注意：筛管长度不合格");
-                $("#assess_feng_kong").val("筛管长度不合格");
-            } else if (zhu_jiang_count - "60" < 0) {
-                layer.alert("注意：注浆量不合格");
-                $("#assess_feng_kong").val("注浆量不合格");
-            } else {
-                $("#assess_feng_kong").val("合格");
-            }
-        });
-
         //监听提交
         form.on('submit(demo1)', function (data) {
             //layer.msg(JSON.stringify(data.field));
@@ -383,7 +228,7 @@
             }, function () {
                 //按钮【按钮一】的回调
                 $.post(
-                    {% url 'submitFengCoalConstruction' %},
+                    {% url 'submitFengData' %},
                     datas,
                     function (res) {
                         if (res.code == 1) {
@@ -402,3 +247,4 @@
     });
 </script>
 </html>
+

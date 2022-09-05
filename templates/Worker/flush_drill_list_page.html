@@ -13,8 +13,9 @@
 
     <style type="text/css">
         .layui-form-label {
-        width: 100px;
+            width: 100px;
         }
+
         .layui-input-block {
             margin-left: 130px;
         }
@@ -23,7 +24,68 @@
 
 <body layadmin-themealias="default">
 <div class="layui-fluid">
-    <table id="demo" lay-filter="test" lay-data="{skin:'row', even:true, size:'sm'}"></table>
+    <div class="layui-card">
+        <div class="layui-card-body">、
+            <blockquote class="layui-elem-quote">冲煤参数查询</blockquote>
+            <form class="layui-form" action="">
+                <div class="layui-inline">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label"><span style="color:red">*</span>工作面选择</label>
+                        <div class="layui-input-block">
+                            <select name="work_face" lay-verify="required" id="work_face"
+                                    lay-filter="work_face">
+                                <option value=""></option>
+                                {% for item in work_face %}
+                                    <option value="{{ item.0 }}">{{ item.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label"><span style="color:red">*</span>巷道选择</label>
+                        <div class="layui-input-block">
+                            <select name="tunnel" id="tunnel" lay-verify="required" lay-filter="tunnel">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label"><span style="color:red">*</span>排号选择</label>
+                        <div class="layui-input-block">
+                            <select name="row" lay-verify="required" id="row" lay-filter="row">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">孔号</label>
+                        <div class="layui-input-block">
+                            <div class="layui-inline">
+                                <input class="layui-input" name="id" id="kong_num" autocomplete="off"
+                                       placeholder="请填写孔号">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" data-type="reload">搜索</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="layui-field-box">
+                <table id="demo" lay-filter="test" class="layui-hide"></table>
+            </div>
+        </div>
+    </div>
 </div>
 </body>
 </html>
@@ -31,59 +93,165 @@
 <script src="{% static 'js/jquery-1.11.1.min.js' %}"></script>
 <script src="{% static 'layuiadmin/layui/layui.js' %}"></script>
 <script type="text/html" id="ToolbarDemo">
-    <a class="layui-btn layui-btn-xs layui-btn-radius" lay-event="detail">填报</a>
+    {% verbatim %}
+    {{# if(d.status == 5){ }}
+    <div class="layui-btn layui-btn-danger layui-btn-xs" lay-event="resume">修改</div>
+    {{# } else{ }}
+    <div class="layui-btn layui-btn-disabled layui-btn-xs">修改</div>
+    {{# } }}
+    {% endverbatim %}
 </script>
-
-<script type="text/html" id="barDemo">
-  <a class="layui-btn layui-btn-xs layui-btn-radius layui-btn-normal" lay-event="input">填报</a>
-</script>
-
 <script>
-    layui.use(['table', 'upload', 'layer', 'laydate'], function () {
-       var table = layui.table;
-       var layer = layui.layer;
-       var $ = layui.$;
-       var laydate = layui.laydate;
+    layui.use(['table', 'upload', 'layer', 'laydate', 'form'], function () {
+        var table = layui.table;
+        var layer = layui.layer;
+        var $ = layui.$;
+        var laydate = layui.laydate;
+        var form = layui.form;
+        //工作面选择
+        form.on('select(work_face)', function (data) {
+            var work_face = $("#work_face").val();
+            console.log("选择工作面" + work_face);
+            $.post(
+                {% url 'getTunnelByWorkface' %},
+                {"work_face": work_face},
+                function (data) {
+                    //每次先清空下拉框
+                    $("#tunnel").empty();
+                    $("#row").empty();
+                    //先给一个空选项
+                    $("#tunnel").append($("<option />").text("").attr("value", ""));
+                    console.log("data is " + data.data, JSON.stringify(data.data));
+                    {#console.log(JSON.parse(data.data))#}
+                    tunnelObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
+                    console.log(tunnelObjs, 'tunnelObjs')
+                    tunnelObjs.map((item, index) => {
+                        id = item.pk;
+                        name = item.fields.tunnel_name;
+                        $("#tunnel").append($("<option />").text(name).attr("value", id)); //动态添加标签
+                        return item;
+                    });
+                    form.render();
+                })
+        });
 
-       table.render({
+        //巷道选择
+        form.on('select(tunnel)', function (data) {
+            var tunnel = $("#tunnel").val();
+            console.log("选择巷道" + tunnel);
+            $.post(
+                {% url 'getRowByTunnel' %},
+                {"tunnel": tunnel},
+                function (data) {
+                    //每次先清空下拉框
+                    $("#row").empty();
+                    $("#row").append($("<option />").text("").attr("value", ""));
+                    console.log("data is " + data.data, JSON.stringify(data.data));
+                    {#console.log(JSON.parse(data.data))#}
+                    rowObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
+                    console.log(rowObjs, 'rowObjs')
+                    rowObjs.map((item, index) => {
+                        id = item.pk;
+                        name = item.fields.row_id;
+                        $("#row").append($("<option />").text(name).attr("value", id)); //动态添加标签
+                        return item;
+                    });
+                    form.render();
+                })
+            $
+        });
+        table.render({
             elem: '#demo',
-           toolbar: '#toolbarDemo',
+            toolbar: '#toolbarDemo',
+            id: "tableReload",
             defaultToolbar: ['filter', 'exports', 'print'],
             height: 'full-200',
-            url: "{% url 'Mining:flush_drill_construct_list_data' %}",        //数据接口
+            url: "{% url 'Mining:goto_flush_drill_list_data' %}",        //数据接口
             cols: [[
-                {type: 'checkbox', fixed: 'left', align: "center" },
-                { field: 'id', title: 'ID', width: 60, sort: true, fixed: 'left', align: "center" },
-                { field: 'pai_num', title: '排号', width: 100, align: "center" },
-                { field: 'kong_num', title: '孔号', width: 100, align: "center" },
-                { field: 'flush_date', title: '冲孔日期', width: 100, align: "center" },
-                { field: 'actual_mei_count', title: '应冲煤量', width: 120, align: "center" },
-                { field: 'flush_drill_presure', title: '冲孔水压', width: 120, align: "center" },
-                { field: 'drill_redius', title: '孔径', width: 120, align: "center" },
-                { field: 'flush_start_time', title: '水力冲孔开始时间', width: 150, align: "center" },
-                { field: 'flush_end_time', title: '水力冲孔结束时间', width: 150, align: "center" },
-                { field: 'class_flush_mei', title: '当班孔冲煤量', width: 120, align: "center" },
-                { field: 'flush_volume', title: '冲煤体积', width: 100, align: "center" },
-                { field: 'assess_flush', title: '冲孔评价', width: 100, align: "center" },
-                { field: 'work_person', title: '施工负责人', width: 100, align: "center" },
-                { field: 'check_person', title: '验收负责人', width: 100, align: "center" },
-                {fixed: 'right', title:'操作', toolbar: '#barDemo', width:80, align: 'center'}
+                {type: 'checkbox', fixed: 'left', align: "center"},
+                {field: 'id', title: 'ID', width: 60, sort: true, fixed: 'left', align: "center"},
+                {field: 'row', title: '排号', width: 100, align: "center"},
+                {field: 'h_c_number', title: '孔号', width: 100, align: "center"},
+                {field: 'time', title: '冲孔日期', width: 100, align: "center"},
+                {field: 'actual_flush_mei', title: '应冲煤量', width: 120, align: "center"},
+                {field: 'flush_water_pressure', title: '冲孔水压', width: 120, align: "center"},
+                {field: 'kong_radius', title: '孔径', width: 120, align: "center"},
+                {field: 'water_start_time', title: '水力冲孔开始时间', width: 150, align: "center"},
+                {field: 'water_end_time', title: '水力冲孔结束时间', width: 150, align: "center"},
+                {field: 'coal_rush_quantity_length', title: '当班冲煤量的长', width: 120, align: "center"},
+                {field: 'coal_rush_quantity_wide', title: '当班冲煤量的宽', width: 120, align: "center"},
+                {field: 'coal_rush_quantity_height', title: '当班冲煤量的高', width: 120, align: "center"},
+                {field: 'flush_volume', title: '冲煤体积', width: 100, align: "center"},
+                {field: 'chong_drill_eval', title: '冲孔评价', width: 100, align: "center"},
+                {field: 'construction_person_name', title: '施工负责人', width: 100, align: "center"},
+                {field: 'text_person', title: '验收负责人', width: 100, align: "center"},
+                {field: 'status', title: '状态', width: 100, align: "center", hide: true},
+                {field: 'desc', title: '状态', width: 100, align: "center"},
+                {fixed: 'right', title: '操作', toolbar: '#ToolbarDemo', width: 80, align: 'center'}
             ]],
             page: true,     //开启分页
         });
 
-       table.on('tool(test)', function(obj){
-            if(obj.event == "input"){
-                layer.open(
-                    {
-                        type: 2,
-                        title: '钻孔施工填报数据',
-                        shadeClose: true, //点击遮罩关闭层
-                        area: ['350px', '450px'],
-                        content: '{% url 'Mining:goto_flush_drill_layer_page' %}'
+        var $ = layui.$, active = {
+            reload: function () {
+                var kong_num = $('#kong_num').val();
+                var rowId = $("#row").val();
+                console.log("kong_num is", kong_num);
+                console.log("rowId is", rowId);
+                //执行重载
+                table.reload('tableReload', {
+                    method: 'get',
+                    url: "{% url 'Mining:goto_flush_drill_list_data' %}",
+                    where: {
+                        kong_num: kong_num,
+                        rowId: rowId
                     },
-                );
+                    page: {
+                        curr: 1
+                    },
+                    done: function (res, curr, count) {
+                        //res为接口返回的信息
+                        console.log(res);
+                    }
+
+                }, 8000);
             }
-       });
+        };
+        $('.layui-btn').on('click', function () {
+            var workface = $("#work_face").val();
+            var tunnel = $("#tunnel").val();
+            var row = $("#row").val();
+            if (workface === "") {
+                layer.msg('请进行工作面选择', {icon: 5});
+            } else if (tunnel === "") {
+                layer.msg('请进行巷道选择', {icon: 5});
+            } else if (row === "") {
+                layer.msg('请进行排号选择', {icon: 5});
+            } else {
+                var type = $(this).data('type');
+                active[type] ? active[type].call(this) : '';
+            }
+            return false;
+        });
+        //监听行工具事件 主要是监听驳回状态设计孔进行重新申请事件
+        table.on('tool(test)', function (obj) {
+            var data = obj.data;
+            Id = data.id
+            if (obj.event === 'resume') {
+                console.log(Id);
+                layer.open({
+                    type: 2,
+                    title: false,//不显示标题栏,
+                    closeBtn: true,
+                    area: ['1000px', '500px'],
+                    shade: 0.8,
+                    id: 'LAY_layuipro', //设定一个id，防止重复弹出,
+                    btnAlign: 'c',
+                    maxmin:true,
+                    moveType: 0, //拖拽模式，0或者1,
+                    content: "{% url 'Mining:goto_flush_drill_layer_page' %}"
+                });
+            }
+        });
     });
 </script>

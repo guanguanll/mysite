@@ -10,42 +10,103 @@
           content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <link rel="stylesheet" href="{% static 'layuiadmin/layui/css/layui.css' %}">
     <link rel="stylesheet" href="{% static 'layuiadmin/style/admin.css' %}">
-    <style type="text/css">
-        .layui-input{
-            width: 150px;
-            font-size:20px;
-            text-align: center;
-            display: inline;
-        }
-    </style>
 
 </head>
 <body layadmin-themealias="default">
-
-    <form class="layui-form" action="">
-        <br><br>
-        <div class="layui-form-item">
-            <label class="layui-form-label">施工确认</label>
-            <div class="layui-input-block">
-                <input type="checkbox" name="table_submit" title="钻孔施工原始表填写齐全">
-                <input type="checkbox" name="ce_xie_check" title="是否按要求测斜">
-            </div>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <fieldset class="layui-elem-field">
+                <blockquote class="layui-elem-quote">施工资料验收</blockquote>
+                <form class="layui-form" action="">
+                    <div class="layui-inline">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label"><span style="color:red">*</span>工作面选择</label>
+                            <div class="layui-input-block">
+                                <select name="work_face" lay-verify="required" id="work_face"
+                                        lay-filter="work_face">
+                                    <option value=""></option>
+                                    {% for item in work_face %}
+                                        <option value="{{ item.0 }}">{{ item.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label"><span style="color:red">*</span>巷道选择</label>
+                            <div class="layui-input-block">
+                                <select name="tunnel" id="tunnel" lay-verify="required" lay-filter="tunnel">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label"><span style="color:red">*</span>排号选择</label>
+                            <div class="layui-input-block">
+                                <select name="row" lay-verify="required" id="row" lay-filter="row">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label"><span style="color:red">*</span>孔号</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <input class="layui-input" lay-verify="required" name="kong_num" id="kong_num"
+                                           autocomplete="off"
+                                           placeholder="请填写孔号">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br><br>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label" style="width:auto"><span style="color:red">*</span>钻进施工原始表填写齐全</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="isQiQuan" value="1" title="是" checked="">
+                            <input type="radio" name="isQiQuan" value="0" title="否">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label" style="width:auto">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:red">*</span>是否按照要求侧斜</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="isCeXie" value="1" title="是" checked="">
+                            <input type="radio" name="isCeXie" value="0" title="否">
+                        </div>
+                    </div>
+                    <div class="layui-form-item layui-form-text">
+                        <label class="layui-form-label">反馈信息</label>
+                        <div class="layui-input-block">
+                            <textarea name="desc" placeholder="请输入内容" class="layui-textarea"
+                                      style="width: 500px"></textarea>
+                        </div>
+                    </div>
+                    <div class="layui-form-item layui-form-text">
+                        <label class="layui-form-label"><span style="color:red">*</span>填报人</label>
+                        <div class="layui-input-block">
+                            <div class="layui-inline">
+                                <input name="person" placeholder="请输填报人" lay-verify="required" class="layui-input">
+                            </div>
+                        </div>
+                    </div>
+                    <br><br>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="submit" class="layui-btn" lay-submit="" lay-filter="demo">立即提交</button>
+                        </div>
+                    </div>
+                </form>
+            </fieldset>
         </div>
-        <div class="layui-form-item layui-form-text">
-            <label class="layui-form-label">反馈信息</label>
-            <div class="layui-input-block">
-                <textarea name="reback_msg" placeholder="请输入内容" class="layui-textarea" style="width: 500px"></textarea>
-            </div>
-        </div>
-        <br><br>
-        <div class="layui-form-item">
-            <div class="layui-input-block">
-                <button type="submit" class="layui-btn" lay-submit="" lay-filter="demo">立即提交</button>
-            </div>
-        </div>
-    </form>
-
-    </body>
+    </div>
+</div>
+</body>
 </html>
 
 <script src="{% static 'js/jquery-1.11.1.min.js' %}"></script>
@@ -57,26 +118,73 @@
         var layer = layui.layer;
         var form = layui.form;
         var $ = layui.$;
-
-        form.on('submit(demo)' ,function(data){          //提交按钮的监听事件
-            $.ajax({
-                   type: "POST",
-                   url: "{% url 'Mining:file_check_submit_process' %}",
-                   data: {"data": JSON.stringify(data.field)},
-                   success: function(res){
-                        if(res.code == 0){      //提交成功
-                            layer.alert(res.msg, {icon: 1,skin: 'layer-ext-demo'})
-                            window.location.href = "{% url 'Mining:check_material_record_list' %}"
-                        }
-                        else if(res.code == 1){ //提交失败
-                            layer.msg(res.msg);
-                        }
-                   },
-                   error: function(jqXHR, textStatus, errorThrown){
-
-                   }
-               })
+        //工作面选择
+        form.on('select(work_face)', function (data) {
+            var work_face = $("#work_face").val();
+            console.log("选择工作面" + work_face);
+            $.post(
+                {% url 'getTunnelByWorkface' %},
+                {"work_face": work_face},
+                function (data) {
+                    //每次先清空下拉框
+                    $("#tunnel").empty();
+                    $("#row").empty();
+                    //先给一个空选项
+                    $("#tunnel").append($("<option />").text("").attr("value", ""));
+                    console.log("data is " + data.data, JSON.stringify(data.data));
+                    {#console.log(JSON.parse(data.data))#}
+                    tunnelObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
+                    console.log(tunnelObjs, 'tunnelObjs')
+                    tunnelObjs.map((item, index) => {
+                        id = item.pk;
+                        name = item.fields.tunnel_name;
+                        $("#tunnel").append($("<option />").text(name).attr("value", id)); //动态添加标签
+                        return item;
+                    });
+                    form.render();
+                })
         });
-})
+        //巷道选择
+        form.on('select(tunnel)', function (data) {
+            var tunnel = $("#tunnel").val();
+            console.log("选择巷道" + tunnel);
+            $.post(
+                {% url 'getRowByTunnel' %},
+                {"tunnel": tunnel},
+                function (data) {
+                    //每次先清空下拉框
+                    $("#row").empty();
+                    $("#row").append($("<option />").text("").attr("value", ""));
+                    console.log("data is " + data.data, JSON.stringify(data.data));
+                    {#console.log(JSON.parse(data.data))#}
+                    rowObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
+                    console.log(rowObjs, 'rowObjs')
+                    rowObjs.map((item, index) => {
+                        id = item.pk;
+                        name = item.fields.row_id;
+                        $("#row").append($("<option />").text(name).attr("value", id)); //动态添加标签
+                        return item;
+                    });
+                    form.render();
+                })
+            $
+        });
+        form.on('submit(demo)', function (data) {
+            $.ajax({
+                type: "POST",
+                url: "{% url 'Mining:file_check_submit_process' %}",
+                data: {"data": JSON.stringify(data.field)},
+                success: function (res) {
+                    if (res.code == 0) {      //提交成功
+                        layer.alert(res.msg, {icon: 1, skin: 'layer-ext-demo'})
+                    } else if (res.code == 1) { //提交失败
+                        layer.alert(res.msg, {icon: 2, skin: 'layer-ext-demo'});
+                    }
+                },
+            })
+            return false;
+        });
+    })
 </script>
+
 

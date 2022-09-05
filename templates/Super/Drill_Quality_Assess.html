@@ -1,0 +1,232 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>打钻质量评价</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="{% static 'layuiadmin/layui/css/layui.css' %}">
+    <link rel="stylesheet" href="{% static 'layuiadmin/style/admin.css' %}">
+
+    <style type="text/css">
+        .layui-form-label {
+            width: 100px;
+        }
+
+        .layui-input-block {
+            margin-left: 130px;
+        }
+    </style>
+</head>
+
+<body layadmin-themealias="default">
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <fieldset class="layui-elem-field">
+                <blockquote class="layui-elem-quote">打钻质量评价</blockquote>
+                <div class="layui-field-box">
+                    <form class="layui-form" action="">
+                        <div class="layui-inline">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label"><span style="color:red">*</span>工作面选择</label>
+                                <div class="layui-input-block">
+                                    <select name="work_face" lay-verify="required" id="work_face"
+                                            lay-filter="work_face">
+                                        <option value=""></option>
+                                        {% for item in work_face %}
+                                            <option value="{{ item.0 }}">{{ item.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label"><span style="color:red">*</span>巷道选择</label>
+                                <div class="layui-input-block">
+                                    <select name="tunnel" id="tunnel" lay-verify="required" lay-filter="tunnel">
+                                        <option value=""></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label"><span style="color:red">*</span>排号选择</label>
+                                <div class="layui-input-block">
+                                    <select name="row" lay-verify="required" id="row" lay-filter="row">
+                                        <option value=""></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="layui-field-box">
+                            <table id="demo" lay-filter="test" class="layui-table">
+                                <thead>
+                                <th colspan="6">
+                                    打孔质量评价表
+                                </th>
+                                </thead>
+                                <tr>
+                                    <td>排号</td>
+                                    <td>孔号</td>
+                                    <td>见煤误差（m）</td>
+                                    <td>见顶误差（m）</td>
+                                    <td>顶板反验钻孔</td>
+                                    <td>异常情况</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>3</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>3</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>3</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                </tr>
+                                <tr>
+                                    <td>打孔质量评价</td>
+                                    <td colspan = "5">
+                                        第32排钻孔见煤误差绝对平方值为46，见顶误差绝对平方值为43，高于当前已施工整排钻孔的平均值（假定见煤平均值为43、见顶平均值为40），见煤施工质量下降（46-43）/43=7%，见顶施工质量下降（43-40）/40=8%。
+                                    1#孔、12#孔及补13#孔顶板反验可能未见煤（位于X坐标轴以下的钻孔均未见煤），钻孔反验未见顶率=（未见顶个数）/（钻孔总数）=3/17=17%，合格。
+                                    该排钻孔平均煤厚3.5m，控制范围内煤体储量2058，整体冲出煤量63t，冲出率3.2%，符合要求。
+                                    2#钻孔及12#钻孔疑似存在断层，需在工作面回采至该区域的时候加强局部措施执行管理。9#孔施工发生喷孔现象，该区域瓦斯存在异常，应在采掘期间补充执行局部措施。
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <img src="" style="float:left; display:none" width="40%"
+                                     height="30%" id="sandian">
+                                <img src="" style="float:left; display:none" width="40%" height="30%" id="zhuzhuang">
+
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block" style="text-align: center">
+                                <button class="layui-btn" lay-submit lay-filter="download">下载</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script src="{% static 'js/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'layuiadmin/layui/layui.js' %}"></script>
+
+<script>
+    layui.use(['table', 'upload', 'layer', 'laydate'], function () {
+        var table = layui.table;
+        var layer = layui.layer;
+        var $ = layui.$;8
+        var form = layui.form;
+
+        //工作面选择
+        form.on('select(work_face)', function (data) {
+            var work_face = $("#work_face").val();
+            console.log("选择工作面" + work_face);
+            $.post(
+                {% url 'getTunnelByWorkface' %},
+                {"work_face": work_face},
+                function (data) {
+                    //每次先清空下拉框
+                    $("#tunnel").empty();
+                    $("#row").empty();
+                    //先给一个空选项
+                    $("#tunnel").append($("<option />").text("").attr("value", ""));
+                    console.log("data is " + data.data, JSON.stringify(data.data));
+                    {#console.log(JSON.parse(data.data))#}
+                    tunnelObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
+                    console.log(tunnelObjs, 'tunnelObjs')
+                    tunnelObjs.map((item, index) => {
+                        id = item.pk;
+                        name = item.fields.tunnel_name;
+                        $("#tunnel").append($("<option />").text(name).attr("value", id)); //动态添加标签
+                        return item;
+                    });
+                    form.render();
+                })
+        });
+
+        //巷道选择
+        form.on('select(tunnel)', function (data) {
+            var tunnel = $("#tunnel").val();
+            console.log("选择巷道" + tunnel);
+            $.post(
+                {% url 'getRowByTunnel' %},
+                {"tunnel": tunnel},
+                function (data) {
+                    //每次先清空下拉框
+                    $("#row").empty();
+                    $("#row").append($("<option />").text("").attr("value", ""));
+                    console.log("data is " + data.data, JSON.stringify(data.data));
+                    {#console.log(JSON.parse(data.data))#}
+                    rowObjs = JSON.stringify(data.data) !== '{}' ? JSON.parse(data.data) : [];
+                    console.log(rowObjs, 'rowObjs')
+                    rowObjs.map((item, index) => {
+                        id = item.pk;
+                        name = item.fields.row_id;
+                        $("#row").append($("<option />").text(name).attr("value", id)); //动态添加标签
+                        return item;
+                    });
+                    form.render();
+                })
+            $
+        });
+
+        //排号选择
+        form.on('select(row)', function (data) {
+            var rorId = $("#row").val();
+            console.log("排号是", rorId);
+            $.post(
+                {% url 'getDrillQualityAssessData' %},
+                {"rowId": rorId},
+                function (res) {
+                    if (res.code == '0') {
+                        layer.msg("打孔质量评价成功");
+                        $("#sandian").attr("src", "{% static 'image/sandian.jpg' %}");
+                        $("#zhuzhuang").attr("src", "{% static 'image/zhuzhuang.jpg' %}");
+                        $("#sandian").show();
+                        $("#zhuzhuang").show();
+                        console.log(res.data);
+                        for (var k in strs) {
+                                mycars.push({
+                                    field: k, title: k, align: 'center', width: 120, sort: false
+                                });
+                        }
+                        {#$("#pingjia").val(res.desc);#}
+                    } else {
+
+                    }
+                }
+            )
+        })
+    });
+</script>

@@ -3,7 +3,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>钻孔设计参数</title>
+    <title>打孔申请审批</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport"
@@ -70,6 +70,17 @@
                         </div>
                     </div>
                 </div>
+                <div class="layui-form-item" id="hide" style="display:none; margin-top:20px">
+                    <label class="layui-form-label">驳回原因</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="reason" id="reason" required lay-verify="required"
+                               placeholder="请输入驳回原因"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                    <br>
+                    <br>
+                    <p style="font-size: smaller; color: red">*注意：按照实际情况填写具体原因</p>
+                </div>
             </form>
             <div class="layui-field-box">
                 <table class="layui-hide" id="table" lay-filter="test"></table>
@@ -84,12 +95,12 @@
 <script src="{% static 'layuiadmin/layui/layui.js' %}"></script>
 <script type="text/html" id="barDemo">
     {% verbatim %}
-    {{# if(d.status == 2){ }}
-    <div class="layui-btn layui-btn-danger layui-btn-xs" lay-event="reSubmit">重新申请</div>
-    <div class="layui-btn layui-btn-danger layui-btn-xs" lay-event="newHole">跳过</div>
+    {{# if(d.status == 0){ }}
+    <div class="layui-btn layui layui-btn-xs" lay-event="pass">审批通过</div>
+    <div class="layui-btn layui-btn-danger layui-btn-xs" lay-event="reject">驳回</div>
     {{# } else{ }}
-    <div class="layui-btn layui-btn-disabled layui-btn-xs">重新申请</div>
-    <div class="layui-btn layui-btn-disabled layui-btn-xs">跳过</div>
+    <div class="layui-btn layui-btn-disabled layui-btn-xs">审批通过</div>
+    <div class="layui-btn layui-btn-disabled layui-btn-xs">驳回</div>
     {{# } }}
     {% endverbatim %}
 </script>
@@ -153,7 +164,7 @@
         var tb = table.render({
             elem: "#table",
             id: "tableReload",
-            url: '{% url 'reloadDrillingDesignParams' %}',
+            url: '{% url 'operator_reload_DrillingDesignParams' %}',
             method: 'get',
             height: 'full-30',
             page: true,
@@ -170,9 +181,9 @@
                 {field: 'wash_coal', width: '8%', title: '冲煤量', sort: true, align: 'center',},
                 {field: 'see_ding_tip', width: '10%', title: '见顶提醒', sort: true, align: 'center',},
                 {field: 'see_mei_tip', width: '10%', title: '见煤提醒', sort: true, align: 'center',},
-                {field: 'desc', width: '10%', title: '状态', sort: true, align: 'center',},
+                {field: 'desc', width: '10%', title: '状态', sort: true, align: 'center', hide: true},
                 {field: 'status', width: '5%', title: '状态码', sort: true, align: 'center', hide: true},
-                {fixed: 'right', width: '10%', title: '操作', align: 'center', toolbar: '#barDemo'},
+                {fixed: 'right', title: '操作', align: 'center', toolbar: '#barDemo'},
             ]]
         });
         var $ = layui.$, active = {
@@ -184,7 +195,7 @@
                 //执行重载
                 table.reload('tableReload', {
                     method: 'get',
-                    url: '{% url 'reloadDrillingDesignParams' %}',
+                    url: '{% url 'operator_reload_DrillingDesignParams' %}',
                     where: {
                         kong_num: kong_num,
                         rowId: rowId
@@ -220,24 +231,74 @@
         table.on('tool(test)', function (obj) {
             var data = obj.data;
             id = data.id
-            if (obj.event === 'reSubmit') {
-                layer.confirm('确定重新提交吗？', function (index) {
+            hole_number = data.kong_num
+            if (obj.event === 'pass') {
+                layer.confirm('确定通过审批吗？', function (index) {
                     $.post(
-                        {% url 'resubmitHoleDesign' %},
-                        {"id": id},
+                        {% url 'passOrrejectHoleDesign' %},
+                        {
+                            "id": id,
+                            "hole_number": hole_number,
+                            "beforeStatus": 0,
+                            "status": 1,
+                            "reason": ""
+                        },
                         function (res) {
                             if (res.code === "0") {
                                 tb.reload();
-                                layer.msg("重新提交成功", {icon: 1});
+                                layer.msg("审批成功", {icon: 1});
                             } else {
-                                layer.msg("重新提交失败," + res.msg, {icon: 5});
+                                layer.msg("审批失败," + res.msg, {icon: 5});
                             }
                         })
                     return false;
                 });
             }
-            if(obj.event === 'newHole'){
-
+            if (obj.event === 'reject') {
+                layer.open({
+                    type: 1,
+                    content: $('#hide'),
+                    title: '冲孔申请驳回',
+                    area: ['390px', '260px'],
+                    shade: 0.3,
+                    maxmin: true,
+                    btnAlign: 'c',
+                    content: $("#hide"),
+                    btn: ['提交', '全部关闭'], //只是为了演示
+                    yes: function () {
+                        var reason = $("#reason").val();
+                        if (reason === "") {
+                            layer.msg('请输入驳回原因', {icon: 5});
+                        } else {
+                            layer.confirm('确定驳回吗？', function (index) {
+                                $.post(
+                                    {% url 'passOrrejectHoleDesign' %},
+                                    {
+                                        "id": id,
+                                        "hole_number": hole_number,
+                                        "beforeStatus": 0,
+                                        "status": 2,
+                                        "reason": reason
+                                    },
+                                    function (res) {
+                                        if (res.code === "0") {
+                                            tb.reload();
+                                            layer.closeAll();
+                                            layer.msg("申请驳回成功", {icon: 1});
+                                        } else {
+                                            layer.closeAll();
+                                            layer.msg("申请驳回失败," + res.msg, {icon: 5});
+                                        }
+                                    })
+                                return false;
+                            });
+                        }
+                    }
+                    ,
+                    btn2: function () {
+                        layer.closeAll();
+                    }
+                })
             }
         });
     });

@@ -1,9 +1,34 @@
+import logging
 
 from django.db import models
 
-
 # Create your models here.
 from django.utils import timezone
+
+
+class Company(models.Model):
+    c_name = models.CharField(max_length=30, verbose_name="公司名称")  # 公司名
+
+    class Meta:
+        db_table = "Company"
+        verbose_name = "公司管理"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return f"Company：{self.c_name}"
+
+
+class Mine(models.Model):
+    m_name = models.CharField(max_length=30, verbose_name="煤矿名称")  # 矿的名字
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, verbose_name="所属公司")  # 关连Company
+
+    class Meta:
+        db_table = 'Mine'
+        verbose_name = "煤矿管理"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return f"Mine:{self.m_name}"
 
 
 class user_group(models.Model):
@@ -14,37 +39,14 @@ class user_group(models.Model):
     usergroup = ((worker, 'worker'), (operator, 'operator'), (superadmin, 'superadmin'))
     username = models.CharField(max_length=12, verbose_name="用户名")  # 账号
     userpwd = models.CharField(max_length=20, verbose_name="用户密码")  # 账号密码
+    # 新增字段，用户属于哪个矿区
+    belongMine = models.ForeignKey(Mine, on_delete=models.CASCADE, verbose_name="所属矿区")
     usertype = models.CharField(max_length=20, choices=usergroup, default=worker, verbose_name="用户身份类别")  # 用户身份类别，默认为工人
 
     class Meta:
         db_table = "user_group"
         verbose_name = "用户管理"
         verbose_name_plural = verbose_name
-
-
-class Company(models.Model):
-    c_name = models.CharField(max_length=30, verbose_name="公司名称")  # 公司名
-
-    class Meta:
-        db_table = "company"
-        verbose_name = "公司管理"
-        verbose_name_plural = verbose_name
-
-    def __str__(self):
-        return self.c_name
-
-
-class Mine(models.Model):
-    m_name = models.CharField(max_length=30, verbose_name="煤矿名称")  # 矿的名字
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, verbose_name="所属公司")  # 关连Company
-
-    class Meta:
-        db_table = 'mine'
-        verbose_name = "煤矿管理"
-        verbose_name_plural = verbose_name
-
-    def __str__(self):
-        return self.m_name
 
 
 class Work_face(models.Model):  # 以下数据全部需要提前录入
@@ -113,7 +115,7 @@ class Tunnel(models.Model):  # 巷道表
     mine_hight = models.FloatField(max_length=10, null=True, blank=True, verbose_name='煤巷高度')  # 煤巷高度
     di_ban_hang = models.FloatField(max_length=10, null=True, blank=True, verbose_name='底板巷宽度')  # 底板巷宽度
     mei_ceng_qing_jiao = models.FloatField(max_length=10, null=True, blank=True, verbose_name='煤层倾角')  # 煤层倾角
-    tunnel_first_hole_number = models.FloatField(max_length=10, null=True, blank=True, verbose_name='首个钻孔号')  # 首个钻孔号
+    tunnel_first_hole_number = models.CharField(max_length=10, null=True, blank=True, verbose_name='首个钻孔号')  # 首个钻孔号
     arch_radius = models.FloatField(max_length=10, null=True, blank=True, verbose_name='拱形半径')  # 拱形半径
     zuan_kong_chui_ju = models.FloatField(max_length=10, null=True, blank=True, verbose_name='钻孔垂距')  # 钻孔垂距
     hole_height = models.FloatField(max_length=10, null=True, blank=True, verbose_name='开孔高度')  # 开孔高度
@@ -267,13 +269,17 @@ class Row(models.Model):  # 排号管理
     row_id = models.CharField(max_length=30, null=True, blank=True, verbose_name='排号')  # 排号,这个是char是因为J1-15,16-94
     mei_qing_jiao = models.FloatField(max_length=10, null=True, blank=True, verbose_name='单排煤层倾角')  # 单排煤层倾角
     current_tunnel_depth = models.FloatField(max_length=10, null=True, blank=True, verbose_name='当前排的巷道深度')  # 当前排的巷道深度
-    row_x = models.FloatField(max_length=10, null=True, blank=True, verbose_name='排x坐标')  # 排x坐标=控制范围x
-    row_y = models.FloatField(max_length=10, null=True, blank=True, verbose_name="排y坐标")  # 排y坐标
-    row_z = models.FloatField(max_length=10, null=True, blank=True, verbose_name='排z坐标')  # 排z坐标
-    pillar_thickness = models.FloatField(max_length=10, null=True, blank=True, verbose_name='岩柱厚度')  # 岩柱厚度
-    coal_seam_thickness = models.FloatField(max_length=10, null=True, blank=True, verbose_name='煤层厚度')  # 煤层厚度
-    left_number = models.FloatField(max_length=10, null=True, blank=True, verbose_name='左侧最新孔号')  # 左侧最新孔号
-    right_number = models.FloatField(max_length=10, null=True, blank=True, verbose_name='右侧最新孔号')  # 右侧最新孔号
+    row_x = models.FloatField(max_length=10, editable=False, null=True, blank=True, verbose_name='排x坐标')  # 排x坐标=控制范围x
+    row_y = models.FloatField(max_length=10, editable=False, null=True, blank=True, verbose_name="排y坐标")  # 排y坐标
+    row_z = models.FloatField(max_length=10, editable=False, null=True, blank=True, verbose_name='排z坐标')  # 排z坐标
+    pillar_thickness = models.FloatField(max_length=10, editable=False, null=True, blank=True,
+                                         verbose_name='岩柱厚度')  # 岩柱厚度
+    coal_seam_thickness = models.FloatField(max_length=10, editable=False, null=True, blank=True,
+                                            verbose_name='煤层厚度')  # 煤层厚度
+    left_number = models.FloatField(max_length=10, editable=False, null=True, blank=True,
+                                    verbose_name='左侧最新孔号')  # 左侧最新孔号
+    right_number = models.FloatField(max_length=10, editable=False, null=True, blank=True,
+                                     verbose_name='右侧最新孔号')  # 右侧最新孔号
 
     class Meta:
         db_table = 'row'
@@ -282,6 +288,128 @@ class Row(models.Model):  # 排号管理
 
     def __str__(self):
         return self.row_id
+
+    # 重写save方法
+    def save(self, *args, **kwargs):
+        row_id = self.row_id
+        tunnel_name = self.tunnel.tunnel_name
+        current_tunnel_depth = self.current_tunnel_depth
+        hole_number = self.tunnel.tunnel_first_hole_number
+        logging.INFO = "row_id=" + row_id
+        logging.INFO = "tunnel_name" + tunnel_name
+        if row_id is not None and tunnel_name is not None:
+            print(self.tunnel)
+            arch_radius = self.tunnel.arch_radius
+            work_face_id = self.tunnel.work_face
+            tunnel_first_hole_number = self.tunnel.tunnel_first_hole_number  # 首孔号
+            qi_dian_x = self.tunnel.di_ban_tunnel_qi_dian_x  # 起点坐标
+            qi_dian_y = self.tunnel.di_ban_tunnel_qi_dian_y
+            zhong_dian_x = self.tunnel.di_ban_tunnel_zhong_dian_x  # 终点坐标
+            zhong_dian_y = self.tunnel.di_ban_tunnel_zhong_dian_y
+            tunnel_length = self.tunnel.tunnel_length
+            row_x = round(qi_dian_x + (current_tunnel_depth / tunnel_length) * (zhong_dian_x - qi_dian_x), 2)
+            row_y = round(qi_dian_y + (current_tunnel_depth / tunnel_length) * (zhong_dian_y - qi_dian_y), 2)
+            data1 = list(di_ban_hang_xiuzheng_ding_ban.objects.filter().all().values_list('di_I_x', 'di_J_Z'))
+            data2 = list(xiu_zheng_mei_ceng_ding_ban.objects.filter().all().values_list('Xiu_x', 'xiu_z'))
+            data3 = list(
+                xiu_zheng_hou_meiceng_di_ban.objects.filter().all().values_list('xiu_zheng_x', 'xiu_zheng_z'))
+            if row_x < data1[0][0] or row_x > data1[-1][0]:
+                print('不在修正底板巷范围内！')
+            elif row_x < data2[0][0] or row_x > data2[-1][0]:
+                print('不在修正煤顶范围内！')
+            elif row_x < data3[0][0] or row_x > data3[-1][0]:
+                print('不在修正煤底范围内！')
+            else:
+                # 1:底板巷修正后顶板坐标
+                x_1_hang, x_2_hang, z_1_hang, z_2_hang = None, None, None, None
+                for data in data1:
+                    if (data[0] <= row_x):
+                        x_1_hang = data[0]
+                        z_1_hang = data[1]
+                    else:
+                        if x_2_hang is None:
+                            x_2_hang = data[0]
+                        if z_2_hang is None:
+                            z_2_hang = data[1]
+                # x_1_hang = data1[data1[:, 0] <= row_x].tail(1).iloc[0, 0]
+                # x_2_hang = data1[data1[:, 0] > row_x].head(1).iloc[0, 0]
+                # z_1_hang = data1[data1[:, 0] <= row_x].tail(1).iloc[0, 1]
+                # z_2_hang = data1[data1[:, 0] > row_x].head(1).iloc[0, 1]
+                # 2：修正后煤层顶板坐标
+                x_1_ding, x_2_ding, z_1_ding, z_2_ding = None, None, None, None
+                for data in data2:
+                    if (data[0] <= row_x):
+                        x_1_ding = data[0]
+                        z_1_ding = data[1]
+                    else:
+                        if x_2_ding is None:
+                            x_2_ding = data[0]
+                        if z_2_ding is None:
+                            z_2_ding = data[1]
+                # x_1_ding = data2[data2.iloc[:, 0] <= row_x].tail(1).iloc[0, 0]
+                # x_2_ding = data2[data2.iloc[:, 0] > row_x].head(1).iloc[0, 0]
+                # z_1_ding = data2[data2.iloc[:, 0] <= row_x].tail(1).iloc[0, 1]
+                # z_2_ding = data2[data2.iloc[:, 0] > row_x].head(1).iloc[0, 1]
+                # 3：修正后煤层底板坐标
+                x_1_di, x_2_di, z_1_di, z_2_di = None, None, None, None
+                for data in data3:
+                    if (data[0] <= row_x):
+                        x_1_di = data[0]
+                        z_1_di = data[1]
+                    else:
+                        if x_2_di is None:
+                            x_2_di = data[0]
+                        if z_2_di is None:
+                            z_2_di = data[1]
+                # x_1_di = data3[data3.iloc[:, 0] <= row_x].tail(1).iloc[0, 0]
+                # x_2_di = data3[data3.iloc[:, 0] > row_x].head(1).iloc[0, 0]
+                # z_1_di = data3[data3.iloc[:, 0] <= row_x].tail(1).iloc[0, 1]
+                # z_2_di = data3[data3.iloc[:, 0] > row_x].head(1).iloc[0, 1]
+                di_ban_hang_hight = self.tunnel.di_ban_hang_hight
+                qi_dian_x = self.tunnel.di_ban_tunnel_qi_dian_x  # 起点坐标
+                qi_dian_y = self.tunnel.di_ban_tunnel_qi_dian_y
+                zhong_dian_x = self.tunnel.di_ban_tunnel_zhong_dian_x  # 终点坐标
+                zhong_dian_y = self.tunnel.di_ban_tunnel_zhong_dian_y
+                design_hole_height = 1.2
+                z_hang = z_1_hang + (z_2_hang - z_1_hang) * (row_x - x_1_hang) / (x_2_hang - x_1_hang)
+                z_ding = z_1_ding + (z_2_ding - z_1_ding) * (row_x - x_1_ding) / (x_2_ding - x_1_ding)
+                z_di = z_1_di + (z_2_di - z_1_di) * (row_x - x_1_di) / (x_2_di - x_1_di)
+                #   求z坐标 z巷 - 3.3(底板巷巷道高度) +1.2
+                z = round(z_hang - di_ban_hang_hight + design_hole_height, 2)
+                #   求岩柱厚度
+                pillar_thickness = round(z_di - z_hang, 2)
+                #   求煤层厚度
+                coal_seam_thickness = round(z_ding - z_di, 2)
+                self.row_x = row_x
+                self.row_y = row_y
+                self.row_z = z
+                self.coal_seam_thickness = coal_seam_thickness
+                self.pillar_thickness = pillar_thickness
+                #   求岩柱厚度
+                rock_section = pillar_thickness
+                #   求煤层厚度
+                coal_section = coal_seam_thickness
+                see_ceil = coal_section + rock_section
+                chuan_ding_length = self.tunnel.work_face.chuan_ding_length
+                hole_depth = see_ceil + float(chuan_ding_length)
+                design_elevation_angel = 90  # 首孔仰角
+                deflection_angle = 0  # 设计偏角
+                single_row = 2
+                chong_mei_standard = float(self.tunnel.work_face.chong_mei_standard)
+                weight_of_flush_coal = round(coal_section * chong_mei_standard, 2)
+                super(Row, self).save(*args, **kwargs)
+                design_elevation_angel = 90  # 首孔仰角
+                my_record = Hole_Design(hole_number=self.tunnel.tunnel_first_hole_number,
+                                        design_hole_height=design_hole_height,
+                                        deflection_angle=deflection_angle,
+                                        design_elevation_angel=90,  # 首孔仰角
+                                        rock_section=rock_section,
+                                        coal_section=coal_section,
+                                        see_ceil=see_ceil,
+                                        hole_depth=hole_depth,
+                                        single_row=single_row, isFirstHole='0', row_id=self.id, weight_of_flush_coal = weight_of_flush_coal)
+                # 保存首孔信息
+                my_record.save()
 
 
 class Every_Row_Con_Id(models.Model):  # 每排钻孔编号及编号次序表
@@ -334,7 +462,12 @@ class Hole_Design(models.Model):  # 设计孔
     see_ceil = models.FloatField(max_length=10, null=True, blank=True)  # 设计见顶
     hole_depth = models.FloatField(max_length=10, null=True, blank=True)  # 设计孔深
     weight_of_flush_coal = models.FloatField(max_length=10, null=True, blank=True)  # 设计冲煤量
-
+    isFirstHole = models.CharField(max_length=10, null=False, blank=False, default="1")  # 是否是首孔 0为首孔，1为非首孔
+    currentHoleFlag = models.CharField(max_length=10, null=False, blank=False, default="0")  # 当前孔标记字段 0为当前孔, 1为非当前孔
+    isNext = models.CharField(max_length=10, null=False, blank=False, default="1")  # 下一个空标记字段 0为下一个孔, 1为非下一个孔
+    status = models.CharField(max_length=10, null=False, blank=False, default="-1")  # 当前孔状态, -1为待申请，0为审批未通过，1为审批通过，2为驳回
+    desc = models.CharField(max_length=50, null=True, blank=True)  # 状态描述
+    reason = models.CharField(max_length=50, null=True, blank=True)  # 驳回原因描述
     class Meta:
         db_table = 'hole_design'
 
@@ -392,6 +525,32 @@ class Hole_Design_Pou_Mian(models.Model):  # 设计单孔平剖面图坐标
         return f"Hole_Design_Pou_Mian:{self.hole_number}"
 
 
+#   新增表*********
+class Hole_Design_Pou_Mian_Cad(models.Model):  # 设计单孔平剖面图坐标
+    hole_number = models.ForeignKey(Hole_Design, on_delete=models.CASCADE)
+    design_jian_mei_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 设计见煤剖面坐标cad_x
+    design_jian_mei_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 设计见煤剖面坐标cad_y
+    design_jian_mei_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 设计见煤剖面坐标cad_z
+
+    design_jian_ding_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 设计见顶剖面坐标cad_x
+    design_jian_ding_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 设计见顶剖面坐标cad_y
+    design_jian_ding_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 设计见顶剖面坐标cad_z
+
+    design_zhong_kong_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 设计终孔剖面坐标cad_x
+    design_zhong_kong_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 设计终孔剖面坐标cad_y
+    design_zhong_kong_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 设计终孔平面坐标cad_z
+
+    design_kai_kong_pou_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 设计开孔剖面坐标cad_x     ******
+    design_kai_kong_pou_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 设计开孔剖面坐标cad_y     ******
+    design_kai_kong_pou_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 设计开孔剖面坐标cad_z     ******
+
+    class Meta:
+        db_table = 'Hole_Design_Pou_Mian_Cad'
+
+    def __str__(self):
+        return f"Hole_Design_Pou_Mian_Cad:{self.hole_number}"
+
+
 class Hole_Construction(models.Model):  # 施工孔
     row = models.ForeignKey(Row, on_delete=models.CASCADE)  # 关联Row
     h_c_number = models.CharField(max_length=30)  # 孔号由系统自动根据排序列出
@@ -409,31 +568,20 @@ class Hole_Construction(models.Model):  # 施工孔
     text_person = models.CharField(max_length=30, null=True, blank=True)  # 验收人员，手写板签字
     charge_person = models.CharField(max_length=30, null=True, blank=True)  # 值班人员，手写板签字
     drill_eval = models.CharField(max_length=30, null=True, blank=True)  # 钻孔评价，手写板签字
-    coal_rush_quantity_length = models.FloatField(max_length=10, null=True, blank=True)  # 当班冲煤量的长
-    coal_rush_quantity_wide = models.FloatField(max_length=10, null=True, blank=True)  # 当班冲煤量的宽
-    coal_rush_quantity_height = models.FloatField(max_length=10, null=True, blank=True)  # 当班冲煤量的高
     hole_diameter = models.FloatField(max_length=10, null=True, blank=True)  # 孔径
     drill_depth = models.FloatField(max_length=10, null=True, blank=True)  # 当班钻进深度
-    screening_length = models.FloatField(max_length=10, null=True, blank=True)  # 筛管长度
-    grouting_pressure = models.FloatField(max_length=10, null=True, blank=True)  # 注浆压力
-    grouting_amount = models.FloatField(max_length=10, null=True, blank=True)  # 注浆量
-    start_hole_depth = models.FloatField(max_length=10, null=True, blank=True)  # 开始封孔孔深
-    end_hole_depth = models.FloatField(max_length=10, null=True, blank=True)  # 结束封孔孔深
-    # water_start_time = models.DateTimeField(auto_now_add=True)  # 水力冲孔开始时间
-    # water_end_time = models.DateTimeField(auto_now_add=True)  # 水力冲孔结束时间
+
     ab_hole_depth_position = models.FloatField(max_length=10, null=True, blank=True)  # 孔内瓦斯的异常孔深位置
     ab_situation = models.CharField(max_length=30, null=True, blank=True)  # 孔内瓦斯异常情况
     security_test_person = models.CharField(max_length=30, null=True, blank=True)  # 安检员，手写板签字
-    watcher = models.CharField(max_length=30, null=True, blank=True)  # 瓦检员，手写板签字
-    grouting_person = models.CharField(max_length=30, null=True, blank=True)  # 注浆人姓名，手写板签字
-    grouting_abnormal_situation = models.CharField(max_length=30, null=True, blank=True)  # 注浆异常情况
+    shi_watcher = models.CharField(max_length=30, null=True, blank=True)  # 瓦检员，手写板签字
     drill_type = models.CharField(max_length=30, null=True, blank=True)  # 钻孔类别 ,顺层/穿孔
+    status = models.CharField(max_length=10, null=False, blank=False, default="0")  # 当前申请状态，0为审批未通过，1为审批通过，2为驳回， 3为冲孔/封孔申请，4为冲孔/封孔申请通过
+    desc = models.CharField(max_length=50, null=True, blank=True)  # 状态描述
+    reason = models.CharField(max_length=50, null=True, blank=True)  # 原因描述
 
     class Meta:
         db_table = 'hole_construction'
-
-    def __str__(self):
-        return f"hole_construction:{self.hole_height}"
 
 
 # 瓦斯浓度测量表
@@ -491,6 +639,9 @@ class Completion_plan_coordinate(models.Model):  # 竣工开孔平面坐标、�
     ya_zuan_x = models.FloatField(max_length=10, null=True, blank=True)  # 压钻点平面坐标x
     ya_zuan_y = models.FloatField(max_length=10, null=True, blank=True)  # 压钻点平面坐标y
     ya_zuan_z = models.FloatField(max_length=10, null=True, blank=True)  # 压钻点平面坐标z
+    hole_depth_x = models.FloatField(max_length=10, null=True, blank=True)  # 竣工终孔x     *****
+    hole_depth_y = models.FloatField(max_length=10, null=True, blank=True)  # 竣工终孔y     *****
+    hole_depth_z = models.FloatField(max_length=10, null=True, blank=True)  # 竣工终孔z     *****
 
     class Meta:
         db_table = "completion_plan_coordinate"
@@ -515,6 +666,87 @@ class Video_confirmation(models.Model):  # 地面视频确认表
 
     def __str__(self):
         return f"video_confirmation:{self.video_check_person}"
+#视频举牌验收
+class vedioCheck(models.Model):
+    row = models.ForeignKey(Row, on_delete=models.CASCADE)  # 关联Row
+    h_c_number = models.CharField(max_length=30)  # 孔号由系统自动根据排序列出
+    isKaiKongShenQing = models.CharField(max_length= 2, null = False, blank=False, default="0") #开孔申请
+    isKaiKongJuPai = models.CharField(max_length= 2, null = False, blank=False, default="0") #开孔举牌
+    isJianMeiJuPai = models.CharField(max_length= 2, null = False, blank=False, default="0") #见煤举牌
+    isJianDingJuPai = models.CharField(max_length= 2, null = False, blank=False, default="0") #见顶举牌
+    isZhongKongJuPai = models.CharField(max_length= 2, null = False, blank=False, default="0") #终孔举牌
+    isTuiZuanYanShouJuPai = models.CharField(max_length= 2, null = False, blank=False, default="0") #退钻举牌
+    isChongMeiYanShouJuPai = models.CharField(max_length= 2, null = False, blank=False, default="0") #冲煤验收举牌
+    isFengKongKaiShiJuPai = models.CharField(max_length= 2, null = False, blank=False, default="0") #封孔开始举牌
+    isFengKongYanShouJuPai = models.CharField(max_length= 2, null = False, blank=False, default="0") #封孔验收举牌
+    date_time = models.DateTimeField(auto_now_add=True, null=True, blank=True)  # 填写日期
+    person = models.CharField(max_length=50, null=True, blank=True)  # 填写人
+    desc = models.CharField(max_length= 50, null = True, blank = True) #反馈信息
+
+    def __str__(self):
+        return f"h_c_number:{self.h_c_number}"
+
+#施工资料验收
+class ShiGongCheck(models.Model):
+    row = models.ForeignKey(Row, on_delete=models.CASCADE)  # 关联Row
+    h_c_number = models.CharField(max_length=30)  # 孔号由系统自动根据排序列出
+    isQiQuan = models.CharField(max_length= 2, null = False, blank=False, default="0") #钻进施工原始表填写齐全
+    isCeXie = models.CharField(max_length= 2, null = False, blank=False, default="0") #是否按照要求测斜
+    date_time = models.DateTimeField(auto_now_add=True, null=True, blank=True)  # 填写日期
+    person = models.CharField(max_length =50, null=True, blank=True)  # 填写人
+    desc = models.CharField(max_length= 50, null = True, blank = True) #反馈信息
+
+    def __str__(self):
+        return f"h_c_number:{self.h_c_number}"
+
+class Wash_Coal_Construction(models.Model):  # 冲煤表
+    row = models.ForeignKey(Row, on_delete=models.CASCADE)  # 关联Row
+    h_c_number = models.CharField(max_length=30)  # 孔号由系统自动根据排序列出
+    video_number = models.CharField(max_length=30, null=True, blank=True)  # 视频编号，这个还是不知道存储类型，所以就只接存储为字符类型
+    con_see_coal = models.FloatField(max_length=10, null=True, blank=True)  # 施工见煤
+    con_see_ceil = models.FloatField(max_length=10, null=True, blank=True)  # 施工见顶
+    chong_drill_eval = models.CharField(max_length=30, null=True, blank=True)  # 冲孔评价，手写板签字
+    coal_rush_quantity_length = models.FloatField(max_length=10, null=True, blank=True)  # 当班冲煤量的长
+    coal_rush_quantity_wide = models.FloatField(max_length=10, null=True, blank=True)  # 当班冲煤量的宽
+    coal_rush_quantity_height = models.FloatField(max_length=10, null=True, blank=True)  # 当班冲煤量的高
+    water_start_time = models.DateTimeField(auto_now_add=True)  # 水力冲孔开始时间
+    water_end_time = models.DateTimeField(auto_now_add=True)  # 水力冲孔结束时间
+    chong_security_test_person = models.CharField(max_length=30, null=True, blank=True)  # 安检员，手写板签字
+    chong_watcher = models.CharField(max_length=30, null=True, blank=True)  # 瓦检员，手写板签字
+    chong_grouting_person = models.CharField(max_length=30, null=True, blank=True)  # 注浆人姓名，手写板签字
+    chong_grouting_abnormal_situation = models.CharField(max_length=30, null=True, blank=True)  # 注浆异常情况
+    drill_type = models.CharField(max_length=30, null=True, blank=True)  # 钻孔类别 ,顺层/穿孔
+    construction_person_name = models.CharField(max_length=30, null=True, blank=True)  # 施工负责人姓名，手写板签字
+    text_person = models.CharField(max_length=30, null=True, blank=True)  # 验收人员，手写板签字
+    status = models.CharField(max_length=10, null=False, blank=False, default="0")  # 当前申请状态,0为审批未通过，1为审批通过，2为驳回， 3为冲孔/封孔申请，4为冲孔/封孔申请通过
+    desc = models.CharField(max_length=50, null=True, blank=True)  # 状态描述
+    reason = models.CharField(max_length=50, null=True, blank=True)  # 原因描述
+    actual_flush_mei = models.FloatField(max_length=10, null=True, blank=True)  #应冲煤量
+    time = models.DateTimeField(auto_now_add=True)  # 冲孔时间
+    flush_water_pressure =  models.FloatField(max_length=10, null=True, blank=True)  #冲孔水压
+    kong_radius =  models.FloatField(max_length=10, null=True, blank=True)  #孔径
+
+class zhu_jiang_Construction(models.Model):  # 注浆孔
+    row = models.ForeignKey(Row, on_delete=models.CASCADE)  # 关联Row
+    h_c_number = models.CharField(max_length=30)  # 孔号由系统自动根据排序列出
+    video_number = models.CharField(max_length=30, null=True, blank=True)  # 视频编号，字符类型
+    zhu_drill_eval = models.CharField(max_length=30, null=True, blank=True)  # 注浆评价
+    screening_length = models.FloatField(max_length=10, null=True, blank=True)  # 筛管长度
+    grouting_pressure = models.FloatField(max_length=10, null=True, blank=True)  # 注浆压力
+    grouting_amount = models.FloatField(max_length=10, null=True, blank=True)  # 注浆量
+    start_hole_depth = models.FloatField(max_length=10, null=True, blank=True)  # 开始封孔孔深
+    end_hole_depth = models.FloatField(max_length=10, null=True, blank=True)  # 结束封孔孔深
+    zhu_security_test_person = models.CharField(max_length=30, null=True, blank=True)  # 安检员，手写板签字
+    zhu_watcher = models.CharField(max_length=30, null=True, blank=True)  # 瓦检员，手写板签字
+    grouting_person = models.CharField(max_length=30, null=True, blank=True)  # 注浆人姓名，手写板签字
+    grouting_abnormal_situation = models.CharField(max_length=30, null=True, blank=True)  # 注浆异常情况
+    drill_type = models.CharField(max_length=30, null=True, blank=True)  # 钻孔类别 ,顺层/穿孔
+    construction_person_name = models.CharField(max_length=30, null=True, blank=True)  # 施工负责人姓名，手写板签字
+    text_person = models.CharField(max_length=30, null=True, blank=True)  # 验收人员，手写板签字
+    feng_time = models.DateTimeField(auto_now_add=True)  # 封孔时间
+    status = models.CharField(max_length=10, null=False, blank=False, default="0")  # 当前申请状态,0为审批未通过，1为审批通过，2为驳回, 3为冲孔/封孔申请，4为冲孔/封孔申请通过, 5为冲孔/封孔申请驳回
+    desc = models.CharField(max_length=50, null=True, blank=True)  # 状态描述
+    reason = models.CharField(max_length=50, null=True, blank=True)  # 原因描述
 
 
 class Wen_zi(models.Model):  # 竣工平面图文字（孔号）  具体内容参考文字1  九里山矿不纳入数据库，直接留在底图上
@@ -539,6 +771,22 @@ class zhun_kong_graph1(models.Model):  # 竣工剖面图钻孔图形1（见煤�
     graph1_y = models.FloatField(max_length=30, null=True, blank=True)  # 竣工图钻孔图形标志坐标y
     graph1_z = models.FloatField(max_length=30, null=True, blank=True)  # 竣工图钻孔图形标志坐标z
     graph1_style = models.CharField(max_length=100, null=True, blank=True)  # 备注：包含图样、颜色及线型、图层
+    graph2_x = models.FloatField(max_length=30, null=True, blank=True)  # 竣工图钻孔图形标志坐标x
+    graph2_y = models.FloatField(max_length=30, null=True, blank=True)  # 竣工图钻孔图形标志坐标y
+    graph2_z = models.FloatField(max_length=30, null=True, blank=True)  # 竣工图钻孔图形标志坐标z
+    graph2_style = models.CharField(max_length=100, null=True, blank=True)  # 备注：包含图样、颜色及线型、图层
+    graph3_x = models.FloatField(max_length=30, null=True, blank=True)  # 竣工图钻孔图形标志坐标x
+    graph3_y = models.FloatField(max_length=30, null=True, blank=True)  # 竣工图钻孔图形标志坐标y
+    graph3_z = models.FloatField(max_length=30, null=True, blank=True)  # 竣工图钻孔图形标志坐标z
+    graph3_style = models.CharField(max_length=100, null=True, blank=True)  # 备注：包含图样、颜色及线型、图层
+    graph4_x = models.FloatField(max_length=30, null=True, blank=True)  # 竣工图钻孔图形标志坐标x
+    graph4_y = models.FloatField(max_length=30, null=True, blank=True)  # 竣工图钻孔图形标志坐标y
+    graph4_z = models.FloatField(max_length=30, null=True, blank=True)  # 竣工图钻孔图形标志坐标z
+    graph4_style = models.CharField(max_length=100, null=True, blank=True)  # 备注：包含图样、颜色及线型、图层
+    graph5_x = models.FloatField(max_length=30, null=True, blank=True)  # 竣工图钻孔图形标志坐标x
+    graph5_y = models.FloatField(max_length=30, null=True, blank=True)  # 竣工图钻孔图形标志坐标y
+    graph5_z = models.FloatField(max_length=30, null=True, blank=True)  # 竣工图钻孔图形标志坐标z
+    graph5_style = models.CharField(max_length=100, null=True, blank=True)  # 备注：包含图样、颜色及线型、图层
 
     class Meta:
         db_table = "zhun_kong_graph1"
@@ -553,11 +801,27 @@ class jun_zhong_hole(models.Model):  # 竣工终孔平面坐标表
     zhong_x = models.CharField(max_length=30, null=True, blank=True)  # 终孔坐标x
     zhong_y = models.CharField(max_length=30, null=True, blank=True)  # 终孔坐标y
     zhong_z = models.CharField(max_length=30, null=True, blank=True)  # 终孔坐标z
+    jun_pao_position_pen_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 喷孔点平面坐标cad_x    *****
+    jun_pao_position_pen_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 喷孔点平面坐标cad_y    *****
+    jun_pao_position_pen_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 喷孔点平面坐标cad_z    *****
+    jun_pao_position_ya_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 压钻点平面坐标cad_x     *****
+    jun_pao_position_ya_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 压钻点平面坐标cad_y     *****
+    jun_pao_position_ya_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 压钻点平面坐标cad_z     *****
+    jun_pao_see_coal_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 见煤平面坐标cad_x     *****
+    jun_pao_see_coal_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 见煤平面坐标cad_y     *****
+    jun_pao_see_coal_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 见煤平面坐标cad_z     *****
+    jun_pao_see_ceil_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 见顶平面坐标cad_x     *****
+    jun_pao_see_ceil_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 见顶平面坐标cad_y     *****
+    jun_pao_see_ceil_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 见顶平面坐标cad_z     *****
+    jun_pao_zhong_kong_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 终孔平面坐标cad_x     *****
+    jun_pao_zhong_kong_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 终孔平面坐标cad_y     *****
+    jun_pao_zhong_kong_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 终孔平面坐标cad_z     *****
 
     class Meta:
         db_table = "jun_zhong_hole"
 
     def __str__(self):
+        return f"jun_zhong_hole:{self.zhong_x}"
         return f"jun_zhong_hole:{self.zhong_x}"
 
 
@@ -568,6 +832,9 @@ class pao_wen_zi(models.Model):  # 竣工剖面图文字（孔号）  具体内�
     pao_wen_zi_y = models.FloatField(max_length=10, null=True, blank=True)  # 剖面竣工孔号文字起点坐标y
     pao_wen_zi_z = models.FloatField(max_length=10, null=True, blank=True)  # 剖面竣工孔号文字起点坐标z
     pao_wen_zi_content = models.CharField(max_length=100, null=True, blank=True)  # 文字内容,包含文字、数字以及特殊字符
+    pao_wen_zi1_x = models.FloatField(max_length=10, null=True, blank=True)  # 剖面竣工孔号下平面文字起点坐标x     *****
+    pao_wen_zi1_y = models.FloatField(max_length=10, null=True, blank=True)  # 剖面竣工孔号下平面文字起点坐标y     *****
+    pao_wen_zi1_z = models.FloatField(max_length=10, null=True, blank=True)  # 剖面竣工孔号下平面文字起点坐标z     *****
 
     class Meta:
         db_table = "pao_wen_zi"
@@ -582,7 +849,23 @@ class pao_graph1(models.Model):  # 竣工剖面图钻孔图形1（见煤、见�
     pao_graph1_x = models.FloatField(max_length=30, null=True, blank=True)  # 剖面竣工孔号文字起点坐标x
     pao_graph1_y = models.FloatField(max_length=30, null=True, blank=True)  # 剖面竣工孔号文字起点坐标y
     pao_graph1_z = models.FloatField(max_length=30, null=True, blank=True)  # 剖面竣工孔号文字起点坐标z
+    pao_graph2_x = models.FloatField(max_length=30, null=True, blank=True)  # *****
+    pao_graph2_y = models.FloatField(max_length=30, null=True, blank=True)  # *****
+    pao_graph2_z = models.FloatField(max_length=30, null=True, blank=True)  # *****
+    pao_graph3_x = models.FloatField(max_length=30, null=True, blank=True)  # *****
+    pao_graph3_y = models.FloatField(max_length=30, null=True, blank=True)  # *****
+    pao_graph3_z = models.FloatField(max_length=30, null=True, blank=True)  # *****
+    pao_graph4_x = models.FloatField(max_length=30, null=True, blank=True)  # *****
+    pao_graph4_y = models.FloatField(max_length=30, null=True, blank=True)  # *****
+    pao_graph4_z = models.FloatField(max_length=30, null=True, blank=True)  # *****
+    pao_graph5_x = models.FloatField(max_length=30, null=True, blank=True)  # *****
+    pao_graph5_y = models.FloatField(max_length=30, null=True, blank=True)  # *****
+    pao_graph5_z = models.FloatField(max_length=30, null=True, blank=True)  # *****
     pao_graph1_content = models.CharField(max_length=100, null=True, blank=True)  # 文字内容,包含文字、数字以及特殊字符
+    pao_graph2_content = models.CharField(max_length=100, null=True, blank=True)  # 文字内容,包含文字、数字以及特殊字符*****
+    pao_graph3_content = models.CharField(max_length=100, null=True, blank=True)  # 文字内容,包含文字、数字以及特殊字符*****
+    pao_graph4_content = models.CharField(max_length=100, null=True, blank=True)  # 文字内容,包含文字、数字以及特殊字符*****
+    pao_graph5_content = models.CharField(max_length=100, null=True, blank=True)  # 文字内容,包含文字、数字以及特殊字符*****
 
     class Meta:
         db_table = "pao_graph1"
@@ -606,12 +889,48 @@ class jun_pao(models.Model):  # 竣工开孔剖面坐标、竣工见煤剖面坐
     jun_pao_zhong_kong_x = models.FloatField(max_length=10, null=True, blank=True)  # 竣工终孔剖面坐标x
     jun_pao_zhong_kong_y = models.FloatField(max_length=10, null=True, blank=True)  # 竣工终孔剖面坐标y
     jun_pao_zhong_kong_z = models.FloatField(max_length=10, null=True, blank=True)  # 竣工终孔剖面坐标z
+    jun_pao_position_pen_x = models.FloatField(max_length=10, null=True, blank=True)  # 竣工喷孔剖面坐标x     *****
+    jun_pao_position_pen_y = models.FloatField(max_length=10, null=True, blank=True)  # 竣工喷孔剖面坐标y     *****
+    jun_pao_position_pen_z = models.FloatField(max_length=10, null=True, blank=True)  # 竣工喷孔剖面坐标z     *****
+    jun_pao_position_ya_x = models.FloatField(max_length=10, null=True, blank=True)  # 竣工压孔剖面坐标x     *****
+    jun_pao_position_ya_y = models.FloatField(max_length=10, null=True, blank=True)  # 竣工压孔剖面坐标y     *****
+    jun_pao_position_ya_z = models.FloatField(max_length=10, null=True, blank=True)  # 竣工压孔剖面坐标z     *****
 
     class Meta:
         db_table = "jun_pao"
 
     def __str__(self):
         return f"jun_pao:{self.jun_pao_see_ceil_x}"
+
+
+# ******************************
+class jun_pao_cad(models.Model):  # cad坐标
+    jun_pao_row = models.ForeignKey(Row, on_delete=models.CASCADE)  # 外键，关联排
+    jun_pao_hole_num = models.CharField(max_length=30, null=True, blank=True)  # 孔的编号
+    jun_pao_kai_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 竣工开孔剖面坐标cad_x
+    jun_pao_kai_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 竣工开孔剖面坐标cad_y
+    jun_pao_kai_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 竣工开孔剖面坐标cad_z
+    jun_pao_see_coal_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 竣工见煤剖面坐标cad_x
+    jun_pao_see_coal_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 竣工见煤剖面坐标cad_y
+    jun_pao_see_coal_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 竣工见煤剖面坐标cad_z
+    jun_pao_see_ceil_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 竣工见顶剖面坐标cad_x
+    jun_pao_see_ceil_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 竣工见顶剖面坐标cad_y
+    jun_pao_see_ceil_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 竣工见顶剖面坐标cad_z
+    jun_pao_zhong_kong_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 竣工终孔剖面坐标cad_x
+    jun_pao_zhong_kong_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 竣工终孔剖面坐标cad_y
+    jun_pao_zhong_kong_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 竣工终孔剖面坐标cad_z
+    jun_pao_position_pen_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 竣工喷孔剖面坐标cad_x
+    jun_pao_position_pen_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 竣工喷孔剖面坐标cad_y
+    jun_pao_position_pen_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 竣工喷孔剖面坐标cad_z
+    jun_pao_position_ya_cad_x = models.FloatField(max_length=10, null=True, blank=True)  # 竣工压钻剖面坐标cad_x
+    jun_pao_position_ya_cad_y = models.FloatField(max_length=10, null=True, blank=True)  # 竣工压钻剖面坐标cad_y
+    jun_pao_position_ya_cad_z = models.FloatField(max_length=10, null=True, blank=True)  # 竣工压钻剖面坐标cad_z
+
+    class Meta:
+        db_table = "jun_pao_cad"
+
+    def __str__(self):
+        return f"jun_pao_cad:{self.jun_pao_see_ceil_cad_x}"
 
 
 class jun_start_end(models.Model):  # 竣工剖面图煤层顶板起止线条坐标、竣工剖面图煤层底板起止线条坐标
@@ -675,12 +994,18 @@ class pou_biao_zhu(models.Model):  # 竣工剖面图标注坐标（含煤厚、�
 
 
 class ping_zhe(models.Model):  # 平面图控制范围折线段坐标表
-    zhe_row = models.ForeignKey(Row, on_delete=models.CASCADE, verbose_name="排号")  # 外键，关联排
-    zhe_hole_num = models.CharField(max_length=30, null=True, blank=True, verbose_name="孔号")  # 孔的编号
-    zhe_x = models.CharField(max_length=30, null=True, blank=True, verbose_name="平面图控制范围折线段坐标x")  # 平面图控制范围折线段坐标x
-    zhe_y = models.CharField(max_length=30, null=True, blank=True, verbose_name="平面图控制范围折线段坐标y")  # 平面图控制范围折线段坐标x
-    zhe_z = models.CharField(max_length=30, null=True, blank=True, verbose_name="平面图控制范围折线段坐标z")  # 平面图控制范围折线段坐标x
-    biao_ji = models.CharField(max_length=30, null=True, blank=True, verbose_name="标记")  # 标记
+    zhe_row = models.ForeignKey(Row, on_delete=models.CASCADE)  # 外键，关联排
+    zhe_hole_num = models.CharField(max_length=30, null=True, blank=True)  # 孔的编号
+    zhe_x = models.CharField(max_length=30, null=True, blank=True)  # 平面图控制范围折线段坐标x
+    zhe_y = models.CharField(max_length=30, null=True, blank=True)  # 平面图控制范围折线段坐标x
+    zhe_z = models.CharField(max_length=30, null=True, blank=True)  # 平面图控制范围折线段坐标x
+    biao_ji = models.CharField(max_length=30, null=True, blank=True)  # 标记
+    zhe_kong_hao1_x = models.CharField(max_length=30, null=True, blank=True)  # 每排最左侧孔号x    *****
+    zhe_kong_hao1_y = models.CharField(max_length=30, null=True, blank=True)  # 每排最左侧孔号y    *****
+    zhe_kong_hao1_z = models.CharField(max_length=30, null=True, blank=True)  # 每排最左侧孔号z    *****
+    zhe_kong_hao2_x = models.CharField(max_length=30, null=True, blank=True)  # 每排最右侧孔号x    *****
+    zhe_kong_hao2_y = models.CharField(max_length=30, null=True, blank=True)  # 每排最右侧孔号y    *****
+    zhe_kong_hao2_z = models.CharField(max_length=30, null=True, blank=True)  # 每排最右侧孔号z    *****
 
     class Meta:
         db_table = "ping_zhe"
@@ -692,11 +1017,11 @@ class ping_zhe(models.Model):  # 平面图控制范围折线段坐标表
 
 
 class pou_zhe_xian(models.Model):  # 剖面图煤巷折线段坐标
-    pou_zhe_row = models.ForeignKey(Row, on_delete=models.CASCADE, verbose_name="排")  # 外键，关联排,由此查排号
-    pou_zhe_hole_num = models.CharField(max_length=30, null=True, blank=True, verbose_name="孔号")  # 孔的编号
-    pou_zhe_x = models.FloatField(max_length=10, null=True, blank=True, verbose_name="剖面图煤巷折线段X坐标")
-    pou_zhe_y = models.FloatField(max_length=10, null=True, blank=True, verbose_name="剖面图煤巷折线段Y坐标")
-    pou_zhe_z = models.FloatField(max_length=10, null=True, blank=True, verbose_name="剖面图煤巷折线段Z坐标")
+    pou_zhe_row = models.ForeignKey(Row, on_delete=models.CASCADE)  # 外键，关联排,由此查排号
+    pou_zhe_hole_num = models.CharField(max_length=30, null=True, blank=True)  # 孔的编号
+    pou_zhe_x = models.FloatField(max_length=10, null=True, blank=True)
+    pou_zhe_y = models.FloatField(max_length=10, null=True, blank=True)
+    pou_zhe_z = models.FloatField(max_length=10, null=True, blank=True)
 
     class Meta:
         db_table = "pou_zhe_xian"
@@ -745,25 +1070,8 @@ class xie_ya_fan_wei(models.Model):  # 泄压范围坐标
     def __str__(self):
         return f"xie_ya_fan_wei:{self.Xie_ya_y}"
 
-
-# 申请记录表模型
-class Apply_Record(models.Model):
-    apply_id = models.IntegerField(default=0, verbose_name="申请编号")
-    apply_person = models.CharField(max_length=24, verbose_name="申请人")      # 绑定申请人账号
-    pai_num = models.IntegerField(default=0, verbose_name="钻孔排号")
-    kong_num = models.CharField(max_length=24, verbose_name="孔号")
-    pian_angle = models.FloatField(default=0.00, verbose_name="偏角")
-    yang_angle = models.FloatField(default=0.00, verbose_name="仰角")
-    kong_length = models.FloatField(default=0.00, verbose_name="孔深")
-    yan_kong_length = models.FloatField(default=0.00, verbose_name="岩孔长度")
-    mei_duan_length = models.FloatField(default=0.00, verbose_name="煤段长度")
-    flush_mei_count = models.FloatField(default=0.00, verbose_name="冲煤量")
-    apply_time = models.DateTimeField(default=timezone.now, verbose_name="申请时间")    # 默认是当前时间
-    apply_inform = models.CharField(max_length=1024, verbose_name="申请信息")
-    apply_status = models.CharField(max_length=16, verbose_name="申请状态")
-    reback_msg = models.CharField(max_length=64, verbose_name="反馈信息")
-
-    class Meta:
-        db_table = "apply_record"
-        verbose_name = "申请记录表"
-        verbose_name_plural = verbose_name
+class cad_picture(models.Model):
+    row = models.ForeignKey(Row, on_delete= models.CASCADE)
+    type = models.CharField(max_length= 2, null = False, blank = False, verbose_name= "文件类型")
+    file_root = models.CharField(max_length= 200, null = False, blank = False, verbose_name = "文件路径")
+    file_name = models.CharField(max_length= 200, null = False, blank = False, verbose_name= "文件名称")
